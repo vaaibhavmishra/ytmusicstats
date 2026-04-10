@@ -56,7 +56,7 @@ A comprehensive web application that analyzes your YouTube Music listening histo
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/DestroyerV/ytmusic-stats.git
+   git clone https://github.com/vaaibhavmishra/ytmusic-stats.git
    cd ytmusic-stats
    ```
 
@@ -275,7 +275,7 @@ We welcome contributions! Please follow these steps:
 
 ### Getting Help
 
-- Check the [Issues](https://github.com/DestroyerV/ytmusic-stats/issues) page
+- Check the [Issues](https://github.com/vaaibhavmishra/ytmusic-stats/issues) page
 - Create a new issue with detailed information
 - Include error messages and steps to reproduce
 
@@ -285,4 +285,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Made with ❤️ by [Vaibhav Mishra](https://github.com/DestroyerV)**
+**Made with ❤️ by [Vaibhav Mishra](https://github.com/vaaibhavmishra)**
