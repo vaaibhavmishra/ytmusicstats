@@ -531,7 +531,7 @@ export function HomeContent() {
               </p>
               <Button variant="outline" asChild className="mt-4">
                 <Link
-                  href="https://github.com/DestroyerV/ytmusic-stats"
+                  href="https://github.com/vaaibhavmishra/ytmusic-stats"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center"
@@ -563,7 +563,7 @@ export function HomeContent() {
                 <Heart className="h-4 w-4 text-red-500" />
                 <span>Made with love by</span>
                 <Link
-                  href="https://github.com/DestroyerV"
+                  href="https://github.com/vaaibhavmishra"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-primary hover:underline font-medium"
@@ -628,7 +628,7 @@ export function HomeContent() {
                 </li>
                 <li>
                   <Link
-                    href="https://github.com/DestroyerV/ytmusic-stats"
+                    href="https://github.com/vaaibhavmishra/ytmusic-stats"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-muted-foreground hover:text-primary transition-colors flex items-center"
@@ -654,7 +654,7 @@ export function HomeContent() {
             {/* Social Links */}
             <div className="flex items-center space-x-4">
               <Link
-                href="https://github.com/DestroyerV"
+                href="https://github.com/vaaibhavmishra"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-primary transition-colors"
@@ -670,7 +670,7 @@ export function HomeContent() {
                 <Twitter className="h-5 w-5" />
               </Link>
               <Link
-                href="https://linkedin.com/in/destroyerv"
+                href="https://linkedin.com/in/vaaibhavmishra"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-primary transition-colors"
