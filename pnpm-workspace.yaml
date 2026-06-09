@@ -1,7 +1,2 @@
-onlyBuiltDependencies:
-  - '@sentry/cli'
-  - '@tailwindcss/oxide'
-  - core-js
-  - msgpackr-extract
-  - protobufjs
-  - sharp
+allowBuilds:
+  sharp: true
