@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  Calendar,
-  Clock,
-  Disc3,
-  History,
-  Music2,
-  Sparkles,
-} from "lucide-react";
+import { Clock, Disc3, History, Music2, Sparkles } from "lucide-react";
 import { motion } from "motion/react";
 import {
   Card,
@@ -77,7 +70,6 @@ export function SongAge({ stats }: SongAgeProps) {
 
   const listeningAge = stats.listeningAge || 0;
   const musicEra = stats.musicEra || "Unknown";
-  const averageYear = stats.averageReleaseYear || new Date().getFullYear();
   const decadeDistribution = stats.decadeDistribution || [];
   const oldestSong = stats.oldestSong;
   const newestSong = stats.newestSong;
@@ -155,7 +147,7 @@ export function SongAge({ stats }: SongAgeProps) {
             </motion.p>
           </div>
         </motion.div>
-        
+
         {/* Decade Distribution */}
         {decadeDistribution.length > 0 && (
           <div className="space-y-3">

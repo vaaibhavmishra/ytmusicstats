@@ -129,7 +129,7 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
           onMouseEnter={() => setHovered(idx)}
           onClick={onItemClick}
           className="relative px-4 py-2 text-neutral-600 dark:text-neutral-300"
-          key={`link-${idx}`}
+          key={item.link}
           href={item.link}
         >
           {hovered === idx && (
@@ -195,7 +195,6 @@ export const MobileNavMenu = ({
   children,
   className,
   isOpen,
-  onClose,
 }: MobileNavMenuProps) => {
   return (
     <AnimatePresence>
@@ -250,7 +249,7 @@ interface NavbarButtonProps {
   children: React.ReactNode;
   className?: string;
   variant?: "primary" | "secondary" | "dark" | "gradient";
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export const NavbarButton: React.FC<NavbarButtonProps> = ({
@@ -273,7 +272,7 @@ export const NavbarButton: React.FC<NavbarButtonProps> = ({
       "bg-gradient-to-b from-blue-500 to-blue-700 text-white shadow-[0px_2px_0px_0px_rgba(255,255,255,0.3)_inset]",
   };
 
-  const TagComponent = Tag as any;
+  const TagComponent = Tag as React.ElementType;
 
   return (
     <TagComponent
