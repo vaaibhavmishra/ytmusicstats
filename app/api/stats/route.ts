@@ -1,9 +1,77 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { z } from "zod/v4";
 import { auth } from "@/lib/auth/config";
 import connectDB from "@/lib/db/connect";
 import { UserStats } from "@/lib/db/models/UserStats";
 import { updateUserStats } from "@/lib/services/user-stats";
 import type { ApiResponse, IUserStats } from "@/lib/types/database";
+
+/**
+ * Zod schema to validate incoming stats payloads.
+ * Only allows known fields with correct types — prevents arbitrary data injection.
+ */
+const topSongSchema = z.object({
+  key: z.string(),
+  title: z.string(),
+  artist: z.string(),
+  channelTitle: z.string().optional(),
+  youtubeId: z.string().optional(),
+  duration: z.number(),
+  playCount: z.number().optional(),
+  totalDuration: z.number().optional(),
+  thumbnail: z.string().optional(),
+  artistImage: z.string().optional(),
+});
+
+const topArtistSchema = z.object({
+  name: z.string(),
+  playCount: z.number(),
+  totalDuration: z.number(),
+  uniqueSongs: z.number(),
+  artistImage: z.string().optional(),
+});
+
+const decadeDistributionSchema = z.object({
+  decade: z.string(),
+  count: z.number(),
+  percentage: z.number(),
+});
+
+const songRefSchema = z.object({
+  title: z.string(),
+  artist: z.string(),
+  year: z.number(),
+});
+
+const userStatsSchema = z.object({
+  totalSongs: z.number(),
+  totalArtists: z.number(),
+  totalPlaytime: z.number(),
+  averageSongLength: z.number(),
+  topArtist: z.string().optional(),
+  topSong: z.string().optional(),
+  firstPlayDate: z.coerce.date().optional(),
+  lastPlayDate: z.coerce.date().optional(),
+  totalListens: z.number(),
+  monthlyPlaytime: z.number(),
+  dailyAverageListens: z.number(),
+  dailyAveragePlaytime: z.number(),
+  longestListenDay: z.coerce.date().optional(),
+  longestListenDayDuration: z.number(),
+  longestSession: z.number(),
+  topSongs: z.array(topSongSchema),
+  topArtists: z.array(topArtistSchema),
+  newArtistsThisMonth: z.number(),
+  totalNewArtists: z.number(),
+  // Song age statistics
+  listeningAge: z.number().optional(),
+  averageReleaseYear: z.number().optional(),
+  musicEra: z.string().optional(),
+  decadeDistribution: z.array(decadeDistributionSchema).optional(),
+  oldestSong: songRefSchema.optional(),
+  newestSong: songRefSchema.optional(),
+  songsWithYearCount: z.number().optional(),
+});
 
 export async function GET(request: NextRequest) {
   try {
@@ -64,24 +132,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Parse the stats from request body
-    const stats: IUserStats = await request.json();
+    // Parse and validate the stats from request body
+    const body = await request.json();
+    const parseResult = userStatsSchema.safeParse(body);
 
-    // Validate required fields
-    if (
-      typeof stats.totalSongs !== "number" ||
-      typeof stats.totalArtists !== "number" ||
-      typeof stats.totalListens !== "number"
-    ) {
+    if (!parseResult.success) {
       return NextResponse.json(
-        { success: false, error: "Invalid stats data" },
+        {
+          success: false,
+          error: "Invalid stats data",
+          details: parseResult.error.issues.map((i) => i.message),
+        },
         { status: 400 },
       );
     }
 
+    const stats = parseResult.data;
+
     await connectDB();
 
-    // Save the stats
+    // Save the validated stats
     await updateUserStats(session.user.id, {
       ...stats,
       lastUpdated: new Date(),
