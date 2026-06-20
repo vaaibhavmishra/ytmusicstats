@@ -1,17 +1,21 @@
-import mongoose from "mongoose";
+// biome-ignore lint/correctness/noUnusedImports: Mongoose type is used in the global declaration below
+import mongoose, { type Mongoose } from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_URI_RAW = process.env.MONGODB_URI;
 
-if (!MONGODB_URI) {
+if (!MONGODB_URI_RAW) {
   throw new Error(
     "Please define the MONGODB_URI environment variable inside .env.local",
   );
 }
 
+const MONGODB_URI: string = MONGODB_URI_RAW;
+
 declare global {
+  // biome-ignore lint/suspicious/noRedeclare: standard Next.js global caching pattern for Mongoose
   var mongoose: {
-    conn: any;
-    promise: Promise<any> | null;
+    conn: Mongoose | null;
+    promise: Promise<Mongoose> | null;
   };
 }
 
@@ -41,12 +45,7 @@ async function connectDB() {
       family: 4, // Use IPv4, skip trying IPv6
     };
 
-    cached.promise = mongoose
-      .connect(MONGODB_URI!, opts)
-      .then((mongooseInstance) => {
-        console.log("✅ MongoDB connected successfully");
-        return mongooseInstance;
-      });
+    cached.promise = mongoose.connect(MONGODB_URI, opts);
   }
 
   try {

@@ -265,10 +265,6 @@ export async function lookupSongs(videoIds: string[]): Promise<LookupResult> {
       return cached && !cached.thumbnail;
     });
 
-    console.log(
-      `Cache hit: ${cachedMap.size}, Missing: ${missingIds.length}, Need thumbnails: ${idsNeedingThumbnails.length}`,
-    );
-
     // Step 3: Fetch missing from YouTube API (including ones needing thumbnails)
     const idsToFetch = [...new Set([...missingIds, ...idsNeedingThumbnails])];
     const newSongs = new Map<string, ISong>();
@@ -282,32 +278,31 @@ export async function lookupSongs(videoIds: string[]): Promise<LookupResult> {
 
       // Step 4: Save new songs to cache OR update existing ones with thumbnails
       if (newSongs.size > 0) {
-        const songsToUpsert = Array.from(newSongs.values());
-
-        for (const song of songsToUpsert) {
-          try {
-            await Song.updateOne(
-              { youtubeId: song.youtubeId },
-              {
-                $set: {
-                  key: `${song.artist.toLowerCase()} - ${song.title.toLowerCase()}`,
-                  youtubeId: song.youtubeId,
-                  title: song.title,
-                  artist: song.artist,
-                  duration: song.duration,
-                  channelTitle: song.channelTitle,
-                  thumbnail: song.thumbnail,
-                  artistImage: song.artistImage,
-                  releaseDate: song.releaseDate,
-                },
+        const bulkOps = Array.from(newSongs.values()).map((song) => ({
+          updateOne: {
+            filter: { youtubeId: song.youtubeId },
+            update: {
+              $set: {
+                key: `${song.artist.toLowerCase()} - ${song.title.toLowerCase()}`,
+                youtubeId: song.youtubeId,
+                title: song.title,
+                artist: song.artist,
+                duration: song.duration,
+                channelTitle: song.channelTitle,
+                thumbnail: song.thumbnail,
+                artistImage: song.artistImage,
+                releaseDate: song.releaseDate,
               },
-              { upsert: true },
-            );
-          } catch {
-            // Ignore errors for individual songs
-          }
+            },
+            upsert: true,
+          },
+        }));
+
+        try {
+          await Song.bulkWrite(bulkOps, { ordered: false });
+        } catch {
+          // Ignore bulk write errors (e.g. duplicate key on concurrent writes)
         }
-        console.log(`Upserted ${songsToUpsert.length} songs with thumbnails`);
       }
     }
 
