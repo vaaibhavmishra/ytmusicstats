@@ -2,9 +2,11 @@
 
 import { ArrowLeft, Home } from "lucide-react";
 import { motion, type Variants } from "motion/react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import Beams from "@/components/Beams";
 import { Button } from "@/components/ui/button";
+
+const Beams = dynamic(() => import("@/components/Beams"), { ssr: false });
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },

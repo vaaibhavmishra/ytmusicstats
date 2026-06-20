@@ -8,7 +8,7 @@ import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { getDeviceCapability, parseFile } from "@/lib/client/parser";
+import { parseFile } from "@/lib/client/parser";
 import {
   calculateStats,
   type StatsProgress,
@@ -59,9 +59,6 @@ export function UploadArea() {
       setStage("reading");
       setProgress(0);
 
-      const capability = getDeviceCapability();
-      console.log(`Processing on ${capability} capability device`);
-
       try {
         // Step 1: Parse the file
         setStage("parsing");
@@ -84,10 +81,6 @@ export function UploadArea() {
           );
         }
 
-        console.log(
-          `Parsed ${parseResult.entries.length} music entries from ${parseResult.totalEntries} total`,
-        );
-
         // Step 2: Fetch song metadata (duration, cleaned artist names)
         setStage("fetching");
         setProgress(55);
@@ -105,8 +98,6 @@ export function UploadArea() {
           },
         );
 
-        console.log(`Fetched metadata for ${metadata.size} unique songs`);
-
         // Step 3: Calculate statistics with real durations
         setStage("calculating");
         const stats = await calculateStats(
@@ -122,12 +113,6 @@ export function UploadArea() {
 
         // Show preview
         setStatsPreview({
-          totalSongs: stats.totalSongs,
-          totalArtists: stats.totalArtists,
-          totalListens: stats.totalListens,
-        });
-
-        console.log("Stats calculated:", {
           totalSongs: stats.totalSongs,
           totalArtists: stats.totalArtists,
           totalListens: stats.totalListens,
@@ -202,7 +187,7 @@ export function UploadArea() {
         "application/json": [".json"],
       },
       maxFiles: 1,
-      maxSize: 10 * 1024 * 1024,
+      maxSize: 100 * 1024 * 1024,
       disabled: isProcessing || stage === "success",
     });
 
@@ -266,7 +251,7 @@ export function UploadArea() {
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs text-muted-foreground">
                   <span>✓ JSON files only</span>
-                  <span>✓ Max 10MB</span>
+                  <span>✓ Max 100MB</span>
                   <span>✓ Processed locally</span>
                 </div>
               </div>

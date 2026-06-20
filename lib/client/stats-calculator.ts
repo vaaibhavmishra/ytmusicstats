@@ -429,17 +429,6 @@ export async function calculateStats(
       artistImage: song.artistImage,
     }));
 
-  // Debug: Log top songs with their thumbnails
-  console.log(
-    "Top songs with thumbnails:",
-    topSongs.map((s) => ({
-      title: s.title,
-      youtubeId: s.youtubeId,
-      hasThumbnail: !!s.thumbnail,
-      hasArtistImage: !!s.artistImage,
-    })),
-  );
-
   onProgress?.({ stage: "calculating", progress: 75 });
   await yieldToBrowser();
 
@@ -456,15 +445,6 @@ export async function calculateStats(
       uniqueSongs: artist.songs.size,
       artistImage: artist.artistImage,
     }));
-
-  // Debug: Log top artists with their images
-  console.log(
-    "Top artists with images:",
-    topArtists.map((a) => ({
-      name: a.name,
-      hasArtistImage: !!a.artistImage,
-    })),
-  );
 
   onProgress?.({ stage: "calculating", progress: 85 });
   await yieldToBrowser();
@@ -548,15 +528,6 @@ export async function calculateStats(
     }
   }
 
-  // Log for debugging (can be removed later)
-  console.log("Monthly stats calculation:", {
-    currentMonth: currentMonthStart.toISOString(),
-    lastPlayDate: lastPlayDate?.toISOString(),
-    monthlyPlaytime,
-    newArtistsThisMonth,
-    sampleEntryDate: entries[0]?.playedAt?.toISOString(),
-  });
-
   // Calculate Song Age statistics (Spotify Wrapped style)
   let listeningAge: number | undefined;
   let averageReleaseYear: number | undefined;
@@ -618,16 +589,6 @@ export async function calculateStats(
         }))
         .sort((a, b) => b.count - a.count); // Sort by count descending
     }
-
-    console.log("Song Age calculation:", {
-      songsWithYear: songYearMap.size,
-      averageReleaseYear,
-      listeningAge,
-      musicEra,
-      oldestSong,
-      newestSong,
-      decadeDistribution,
-    });
   }
 
   onProgress?.({ stage: "complete", progress: 100 });

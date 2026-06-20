@@ -26,9 +26,11 @@ export async function fetchSongMetadata(
 ): Promise<Map<string, ISong>> {
   // Extract unique video IDs
   const videoIds: string[] = [];
+  const seen = new Set<string>();
 
   for (const entry of entries) {
-    if (entry.youtubeId && !videoIds.includes(entry.youtubeId)) {
+    if (entry.youtubeId && !seen.has(entry.youtubeId)) {
+      seen.add(entry.youtubeId);
       videoIds.push(entry.youtubeId);
     }
   }
@@ -67,19 +69,6 @@ export async function fetchSongMetadata(
       if (result.success && result.data) {
         for (const [id, song] of Object.entries(result.data)) {
           metadata.set(id, song);
-        }
-
-        // Debug: Log a sample of the metadata to verify thumbnails are present
-        if (currentBatch === 1) {
-          const sampleSongs = Object.values(result.data).slice(0, 3);
-          console.log(
-            "Sample metadata from lookupSongs:",
-            sampleSongs.map((s) => ({
-              title: s.title,
-              thumbnail: s.thumbnail,
-              artistImage: s.artistImage,
-            })),
-          );
         }
       }
 
