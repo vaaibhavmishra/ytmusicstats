@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import { motion, type Variants } from "motion/react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,9 +21,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { CardLoading } from "@/components/ui/loading";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { ApiResponse, IUserStats } from "@/lib/types/database";
+import type { IUserStats } from "@/lib/types/database";
 import { ListeningPatterns } from "./ListeningPatterns";
 import { SongAge } from "./SongAge";
 import { StatsOverview } from "./StatsOverview";
@@ -54,44 +52,12 @@ const itemVariants: Variants = {
 };
 
 interface DashboardContentProps {
-  userId: string;
+  stats: IUserStats | null;
 }
 
-export function DashboardContent({ userId: _userId }: DashboardContentProps) {
-  const [stats, setStats] = useState<ApiResponse<IUserStats> | null>(null);
-  const [statsLoading, setStatsLoading] = useState(true);
-
-  // Fetch user stats
-  useEffect(() => {
-    async function fetchStats() {
-      try {
-        const response = await fetch("/api/stats");
-        if (!response.ok) {
-          if (response.status === 404) {
-            setStats(null);
-            return;
-          }
-          throw new Error("Failed to fetch stats");
-        }
-        const data = await response.json();
-        setStats(data);
-      } catch (error) {
-        console.error("Error fetching stats:", error);
-        setStats(null);
-      } finally {
-        setStatsLoading(false);
-      }
-    }
-
-    fetchStats();
-  }, []);
-
-  if (statsLoading) {
-    return <CardLoading text="Loading your music stats..." height="16rem" />;
-  }
-
+export function DashboardContent({ stats }: DashboardContentProps) {
   // If no stats, show welcome screen with upload link
-  if (!stats?.data) {
+  if (!stats) {
     return (
       <motion.div
         className="max-w-3xl mx-auto"
@@ -179,19 +145,19 @@ export function DashboardContent({ userId: _userId }: DashboardContentProps) {
         <div className="flex items-center space-x-3">
           <Badge variant="secondary" className="gap-1">
             <Clock className="h-3 w-3" />
-            Last updated:{" "}
-            {stats?.data?.lastUpdated
-              ? new Date(stats.data.lastUpdated).toLocaleDateString()
-              : "Never"}
+            <span suppressHydrationWarning>
+              Last updated:{" "}
+              {stats?.lastUpdated
+                ? new Date(stats.lastUpdated).toLocaleDateString()
+                : "Never"}
+            </span>
           </Badge>
-          {stats?.data?.totalSongs &&
-            typeof stats.data.totalSongs === "number" && (
-              <Badge variant="outline" className="gap-1">
-                <Music className="h-3 w-3" />
-                {new Intl.NumberFormat().format(stats.data.totalSongs)} songs
-                analyzed
-              </Badge>
-            )}
+          {stats?.totalSongs && typeof stats.totalSongs === "number" && (
+            <Badge variant="outline" className="gap-1">
+              <Music className="h-3 w-3" />
+              {new Intl.NumberFormat().format(stats.totalSongs)} songs analyzed
+            </Badge>
+          )}
         </div>
         <Link href="/wrapped">
           <Button className="gap-2">
@@ -202,19 +168,12 @@ export function DashboardContent({ userId: _userId }: DashboardContentProps) {
       </motion.div>
 
       <motion.div variants={itemVariants}>
-        <StatsOverview stats={stats?.data} />
+        <StatsOverview stats={stats} />
       </motion.div>
 
       <motion.div variants={itemVariants}>
         <Tabs defaultValue="artists" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3 lg:grid-cols-3 bg-muted">
-            {/* <TabsTrigger
-              value="overview"
-              className="gap-2 data-[state=active]:bg-background"
-            >
-              <BarChart3 className="h-4 w-4" />
-              <span className="hidden sm:inline">Overview</span>
-            </TabsTrigger> */}
             <TabsTrigger
               value="artists"
               className="gap-2 data-[state=active]:bg-background"
@@ -238,25 +197,18 @@ export function DashboardContent({ userId: _userId }: DashboardContentProps) {
             </TabsTrigger>
           </TabsList>
 
-          {/* <TabsContent value="overview" className="space-y-6">
-            <div className="grid gap-6 md:grid-cols-2">
-              <TopArtists stats={stats?.data} />
-              <TopSongs stats={stats?.data} />
-            </div>
-          </TabsContent> */}
-
           <TabsContent value="artists">
-            <TopArtists stats={stats?.data} />
+            <TopArtists stats={stats} />
           </TabsContent>
 
           <TabsContent value="songs">
-            <TopSongs stats={stats?.data} />
+            <TopSongs stats={stats} />
           </TabsContent>
 
           <TabsContent value="insights" className="space-y-6">
-            <SongAge stats={stats?.data} />
+            <SongAge stats={stats} />
 
-            <ListeningPatterns stats={stats?.data} />
+            <ListeningPatterns stats={stats} />
 
             <div className="grid gap-6 md:grid-cols-2">
               <Card>
@@ -270,34 +222,38 @@ export function DashboardContent({ userId: _userId }: DashboardContentProps) {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {stats?.data?.firstPlayDate && (
+                  {stats?.firstPlayDate && (
                     <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
                       <span className="text-sm font-medium">
                         First song played
                       </span>
-                      <span className="text-sm text-muted-foreground">
-                        {new Date(
-                          stats.data.firstPlayDate,
-                        ).toLocaleDateString()}
+                      <span
+                        className="text-sm text-muted-foreground"
+                        suppressHydrationWarning
+                      >
+                        {new Date(stats.firstPlayDate).toLocaleDateString()}
                       </span>
                     </div>
                   )}
-                  {stats?.data?.lastPlayDate && (
+                  {stats?.lastPlayDate && (
                     <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
                       <span className="text-sm font-medium">
                         Latest activity
                       </span>
-                      <span className="text-sm text-muted-foreground">
-                        {new Date(stats.data.lastPlayDate).toLocaleDateString()}
+                      <span
+                        className="text-sm text-muted-foreground"
+                        suppressHydrationWarning
+                      >
+                        {new Date(stats.lastPlayDate).toLocaleDateString()}
                       </span>
                     </div>
                   )}
                   <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
                     <span className="text-sm font-medium">Discovery rate</span>
                     <span className="text-sm text-muted-foreground">
-                      {stats?.data?.newArtistsThisMonth &&
-                      stats.data.newArtistsThisMonth > 0
-                        ? `${stats.data.newArtistsThisMonth} new artists this month`
+                      {stats?.newArtistsThisMonth &&
+                      stats.newArtistsThisMonth > 0
+                        ? `${stats.newArtistsThisMonth} new artists this month`
                         : "No new artists this month"}
                     </span>
                   </div>
@@ -315,21 +271,21 @@ export function DashboardContent({ userId: _userId }: DashboardContentProps) {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {stats?.data?.totalSongs &&
-                    stats?.data?.totalListens &&
-                    stats?.data?.totalArtists && (
+                  {stats?.totalSongs &&
+                    stats?.totalListens &&
+                    stats?.totalArtists && (
                       <>
                         <div className="p-3 bg-muted/50 rounded-lg">
                           <p className="text-sm font-medium">
                             Average song length
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            {stats.data.averageSongLength &&
-                            Number.isFinite(stats.data.averageSongLength) ? (
+                            {stats.averageSongLength &&
+                            Number.isFinite(stats.averageSongLength) ? (
                               <>
-                                {Math.floor(stats.data.averageSongLength / 60)}:
+                                {Math.floor(stats.averageSongLength / 60)}:
                                 {String(
-                                  Math.floor(stats.data.averageSongLength % 60),
+                                  Math.floor(stats.averageSongLength % 60),
                                 ).padStart(2, "0")}
                               </>
                             ) : (
@@ -340,12 +296,10 @@ export function DashboardContent({ userId: _userId }: DashboardContentProps) {
                         <div className="p-3 bg-muted/50 rounded-lg">
                           <p className="text-sm font-medium">Music variety</p>
                           <p className="text-xs text-muted-foreground">
-                            {stats.data.totalSongs &&
-                            stats.data.totalListens ? (
+                            {stats.totalSongs && stats.totalListens ? (
                               <>
                                 {(
-                                  (stats.data.totalSongs /
-                                    stats.data.totalListens) *
+                                  (stats.totalSongs / stats.totalListens) *
                                   100
                                 ).toFixed(1)}
                                 % unique songs
@@ -360,12 +314,10 @@ export function DashboardContent({ userId: _userId }: DashboardContentProps) {
                             Dedication level
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            {stats.data.totalListens &&
-                            stats.data.totalArtists ? (
+                            {stats.totalListens && stats.totalArtists ? (
                               <>
                                 {Math.round(
-                                  stats.data.totalListens /
-                                    stats.data.totalArtists,
+                                  stats.totalListens / stats.totalArtists,
                                 )}{" "}
                                 listens per artist
                               </>
