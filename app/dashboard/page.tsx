@@ -1,7 +1,24 @@
+import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/config";
+import connectDB from "@/lib/db/connect";
+import { UserStats } from "@/lib/db/models/UserStats";
+import type { IUserStats } from "@/lib/types/database";
 import { DashboardContent } from "./components/DashboardContent";
+
+export const metadata: Metadata = {
+  title: "Dashboard - Your Music Analytics",
+  description:
+    "View your personalized YouTube Music analytics dashboard. See your top artists, most played songs, listening time, and detailed music statistics.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+  alternates: {
+    canonical: "/dashboard",
+  },
+};
 
 export default async function DashboardPage() {
   const session = await auth.api.getSession({
@@ -11,6 +28,17 @@ export default async function DashboardPage() {
   if (!session?.user) {
     redirect("/auth/signin");
   }
+
+  // Fetch stats server-side to eliminate client-side waterfall
+  await connectDB();
+  const statsDoc = await UserStats.findOne({
+    userId: session.user.id,
+  }).lean();
+
+  // Serialize the Mongoose document to a plain object for the client component
+  const stats: IUserStats | null = statsDoc
+    ? JSON.parse(JSON.stringify(statsDoc))
+    : null;
 
   return (
     <div className="min-h-screen pt-20">
@@ -33,7 +61,7 @@ export default async function DashboardPage() {
           )}
         </div>
 
-        <DashboardContent userId={session.user.id} />
+        <DashboardContent stats={stats} />
       </div>
     </div>
   );
