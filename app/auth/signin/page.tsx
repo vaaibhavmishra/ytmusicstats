@@ -1,8 +1,11 @@
 "use client";
 
-import { useState, Suspense } from "react";
-import { signIn } from "@/lib/auth/client";
+import { LoaderCircle, Music } from "lucide-react";
+import { motion, type Variants } from "motion/react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,12 +16,9 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { LoaderCircle, Music, ArrowLeft } from "lucide-react";
-import Link from "next/link";
-import { toast } from "sonner";
 import { PageLoading } from "@/components/ui/loading";
-import { motion, type Variants } from "motion/react";
+import { Separator } from "@/components/ui/separator";
+import { signIn } from "@/lib/auth/client";
 
 const containerVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
@@ -57,7 +57,7 @@ function SignInForm() {
     setIsLoading(true);
 
     try {
-      const { data, error } = await signIn.email({
+      const { error } = await signIn.email({
         email,
         password,
       });
@@ -72,7 +72,7 @@ function SignInForm() {
         });
         router.push(redirectTo);
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("An error occurred", {
         description: "Please try again later.",
       });
@@ -87,7 +87,7 @@ function SignInForm() {
         provider: "google",
         callbackURL: redirectTo,
       });
-    } catch (error) {
+    } catch (_error) {
       toast.error("Google sign in failed", {
         description: "Please try again later.",
       });
@@ -105,7 +105,7 @@ function SignInForm() {
         <Card className="w-full">
           <motion.div variants={itemVariants}>
             <CardHeader className="text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-red-500 to-red-700 rounded-full mb-4 mx-auto">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-linear-to-r from-red-500 to-red-700 rounded-full mb-4 mx-auto">
                 <Music className="h-6 w-6 text-white" />
               </div>
               <CardTitle className="text-2xl">Welcome Back</CardTitle>

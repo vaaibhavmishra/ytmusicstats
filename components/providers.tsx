@@ -4,7 +4,6 @@ import type { ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "./theme-provider";
 
-
 interface ProvidersProps {
   children: ReactNode;
 }

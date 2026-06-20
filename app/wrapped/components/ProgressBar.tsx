@@ -27,12 +27,14 @@ export function ProgressBar({
   }, [progress]);
 
   // Reset progress when slide changes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: explicitly want to reset when currentSlide changes
   useEffect(() => {
     setProgress(0);
     progressRef.current = 0;
   }, [currentSlide]);
 
   // Handle animation based on pause state
+  // biome-ignore lint/correctness/useExhaustiveDependencies: restart animation when currentSlide changes
   useEffect(() => {
     // Cancel any existing animation
     if (animationRef.current) {
@@ -84,6 +86,7 @@ export function ProgressBar({
     <div className="absolute top-4 left-4 right-4 z-50 flex gap-1.5">
       {Array.from({ length: totalSlides }).map((_, index) => (
         <button
+          // biome-ignore lint/suspicious/noArrayIndexKey: simple static array layout requires index-based keys
           key={`slide-${index}`}
           type="button"
           onClick={() => onSlideClick(index)}
