@@ -44,4 +44,6 @@ const SongSchema = new Schema<ISong>(
   },
 );
 
+SongSchema.index({ updatedAt: 1 }, { expireAfterSeconds: 30 * 24 * 60 * 60 });
+
 export const Song = models.Song || model("Song", SongSchema);

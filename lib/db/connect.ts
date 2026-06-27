@@ -39,10 +39,12 @@ async function connectDB() {
     const opts = {
       dbName: "ytmusic-stats",
       bufferCommands: false,
-      maxPoolSize: 10, // Maintain up to 10 socket connections
-      serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
-      socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-      family: 4, // Use IPv4, skip trying IPv6
+      maxPoolSize: 3,
+      minPoolSize: 0,
+      maxIdleTimeMS: 10000,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+      family: 4,
     };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts);

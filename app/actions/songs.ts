@@ -2,13 +2,13 @@
 
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth/config";
+import connectDB from "@/lib/db/connect";
+import { Song } from "@/lib/db/models/Song";
 import {
   cleanArtistName,
   extractArtistFromTitle,
   isGenericArtist,
-} from "@/lib/client/parser";
-import connectDB from "@/lib/db/connect";
-import { Song } from "@/lib/db/models/Song";
+} from "@/lib/parsing/transforms";
 import type { ISong, LookupResult } from "@/lib/types/database";
 
 // Re-export LookupResult for convenience
@@ -290,7 +290,7 @@ export async function lookupSongs(videoIds: string[]): Promise<LookupResult> {
                 duration: song.duration,
                 channelTitle: song.channelTitle,
                 thumbnail: song.thumbnail,
-                artistImage: song.artistImage,
+                // artistImage: song.artistImage,
                 releaseDate: song.releaseDate,
               },
             },
