@@ -4,99 +4,105 @@
  */
 
 import { lookupSongs } from "@/app/actions/songs";
+import { mapWithConcurrency } from "@/lib/concurrency";
 import type {
   FetchProgress,
   ISong,
   ParsedSongInfo,
 } from "@/lib/types/database";
 
-// Batch size for client-side processing to show incremental progress
-const CLIENT_BATCH_SIZE = 200;
+// Batch size for client-side processing. Each batch is one server-action
+// round-trip (auth + DB connect + origin check happen once per call), so larger
+// batches cut fixed per-call overhead. The server chunks internally by 50 for
+// the YouTube API, so this only affects round-trip count and progress
+// granularity — kept large enough to amortize overhead, small enough to still
+// surface incremental progress.
+const CLIENT_BATCH_SIZE = 500;
+
+// Number of lookup batches to run concurrently. Kept moderate to stay clear of
+// YouTube API rate limits and the Mongo Atlas M0 connection budget while still
+// cutting wall-clock ~4x versus sequential fetching.
+const LOOKUP_CONCURRENCY = 4;
 
 // Re-export FetchProgress for convenience
 export type { FetchProgress } from "@/lib/types/database";
 
 /**
- * Fetch metadata for a batch of entries using server action
- * Processes in batches to show incremental progress
+ * Fetch metadata for a list of unique video IDs using the server action.
+ * The de-dup is done upstream in the parse layer (see `ParseResult.uniqueVideoIds`).
+ * Processes in batches to show incremental progress.
  */
 export async function fetchSongMetadata(
-  entries: ParsedSongInfo[],
+  videoIds: string[],
   onProgress?: (progress: FetchProgress) => void,
 ): Promise<Map<string, ISong>> {
-  // Extract unique video IDs
-  const videoIds: string[] = [];
-  const seen = new Set<string>();
-
-  for (const entry of entries) {
-    if (entry.youtubeId && !seen.has(entry.youtubeId)) {
-      seen.add(entry.youtubeId);
-      videoIds.push(entry.youtubeId);
-    }
-  }
-
   const metadata = new Map<string, ISong>();
 
   if (videoIds.length === 0) {
     return metadata;
   }
 
-  const totalBatches = Math.ceil(videoIds.length / CLIENT_BATCH_SIZE);
+  // Split the unique IDs into batches up front so they can be fetched with
+  // bounded concurrency.
+  const batches: string[][] = [];
+  for (let i = 0; i < videoIds.length; i += CLIENT_BATCH_SIZE) {
+    batches.push(videoIds.slice(i, i + CLIENT_BATCH_SIZE));
+  }
+  const totalBatches = batches.length;
+
   let totalCached = 0;
   let totalFetched = 0;
   let processed = 0;
+  let completedBatches = 0;
 
   // Initial progress report
-  if (onProgress) {
-    onProgress({
-      total: videoIds.length,
-      processed: 0,
-      fetched: 0,
-      cached: 0,
-      currentBatch: 0,
-      totalBatches,
-    });
-  }
+  onProgress?.({
+    total: videoIds.length,
+    processed: 0,
+    fetched: 0,
+    cached: 0,
+    currentBatch: 0,
+    totalBatches,
+  });
 
-  // Process in batches to show incremental progress
-  for (let i = 0; i < videoIds.length; i += CLIENT_BATCH_SIZE) {
-    const batchIds = videoIds.slice(i, i + CLIENT_BATCH_SIZE);
-    const currentBatch = Math.floor(i / CLIENT_BATCH_SIZE) + 1;
+  // Fetch batches concurrently (bounded). Shared counters are mutated inside the
+  // callback — safe because JS runs each continuation to completion without
+  // interleaving. `currentBatch` now reports batches *completed*.
+  await mapWithConcurrency(
+    batches,
+    LOOKUP_CONCURRENCY,
+    async (batchIds, index) => {
+      try {
+        const result = await lookupSongs(batchIds);
 
-    try {
-      const result = await lookupSongs(batchIds);
-
-      if (result.success && result.data) {
-        for (const [id, song] of Object.entries(result.data)) {
-          metadata.set(id, song);
+        if (result.success && result.data) {
+          for (const [id, song] of Object.entries(result.data)) {
+            metadata.set(id, song);
+          }
         }
-      }
 
-      // Update totals from this batch
-      if (result.stats) {
-        totalCached += result.stats.cached;
-        totalFetched += result.stats.fetched;
-      }
-
-      processed += batchIds.length;
-
-      // Report progress after each batch
-      if (onProgress) {
-        onProgress({
+        // Update totals from this batch
+        if (result.stats) {
+          totalCached += result.stats.cached;
+          totalFetched += result.stats.fetched;
+        }
+      } catch (error) {
+        console.error(`Error fetching batch ${index + 1}:`, error);
+        // Continue with remaining batches instead of failing entirely
+      } finally {
+        processed += batchIds.length;
+        completedBatches++;
+        onProgress?.({
           total: videoIds.length,
           processed,
           fetched: totalFetched,
           cached: totalCached,
-          currentBatch,
+          currentBatch: completedBatches,
           totalBatches,
         });
       }
-    } catch (error) {
-      console.error(`Error fetching batch ${currentBatch}:`, error);
-      // Continue with next batch instead of failing entirely
-      processed += batchIds.length;
-    }
-  }
+    },
+  );
 
   return metadata;
 }

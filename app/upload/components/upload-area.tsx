@@ -86,7 +86,7 @@ export function UploadArea() {
         setProgress(55);
 
         const metadata = await fetchSongMetadata(
-          parseResult.entries,
+          parseResult.uniqueVideoIds,
           (metaProgress) => {
             setMetadataStats(metaProgress);
             // Map metadata progress to 50-70%

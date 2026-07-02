@@ -2,6 +2,7 @@
 
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth/config";
+import { mapWithConcurrency } from "@/lib/concurrency";
 import connectDB from "@/lib/db/connect";
 import { Song } from "@/lib/db/models/Song";
 import {
@@ -17,6 +18,9 @@ export type { LookupResult } from "@/lib/types/database";
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
 const YOUTUBE_BATCH_SIZE = 50; // YouTube API limit per request
 const MAX_VIDEO_IDS = 8000; // Limit to prevent abuse
+// Concurrent YouTube API requests per phase. Moderate to avoid 429 rate limits
+// and keep each server-action invocation well under the Vercel function timeout.
+const YOUTUBE_FETCH_CONCURRENCY = 4;
 
 /**
  * Parse ISO 8601 duration to seconds
@@ -65,111 +69,143 @@ async function fetchFromYouTubeAPI(
     return results;
   }
 
+  // Capture the key in a local const so the narrowing survives into the async
+  // fetch closures below (TS widens the module-level `YOUTUBE_API_KEY` back to
+  // `string | undefined` inside nested functions).
+  const apiKey = YOUTUBE_API_KEY;
+
   // Collect unique channel IDs for artist images
   const channelIds = new Set<string>();
   const videoChannelMap = new Map<string, string>();
 
-  // Process in batches of 50 (YouTube API limit)
+  // Build video-ID batches (YouTube API allows up to 50 IDs per request).
+  const videoBatches: string[][] = [];
   for (let i = 0; i < videoIds.length; i += YOUTUBE_BATCH_SIZE) {
-    const batchIds = videoIds.slice(i, i + YOUTUBE_BATCH_SIZE);
-    const idsParam = batchIds.join(",");
+    videoBatches.push(videoIds.slice(i, i + YOUTUBE_BATCH_SIZE));
+  }
 
-    try {
-      const response = await fetch(
-        `https://www.googleapis.com/youtube/v3/videos?` +
-          `part=contentDetails,snippet&id=${idsParam}&key=${YOUTUBE_API_KEY}`,
-      );
-
-      if (!response.ok) {
-        console.error(`YouTube API error: ${response.status}`);
-        continue;
-      }
-
-      const data = await response.json();
-
-      for (const item of data.items || []) {
-        const duration = parseISO8601Duration(
-          item.contentDetails?.duration || "PT0S",
+  // Fetch video batches concurrently. Each task returns its parsed songs so the
+  // shared maps are mutated off the await path, after all batches resolve.
+  const videoBatchResults = await mapWithConcurrency(
+    videoBatches,
+    YOUTUBE_FETCH_CONCURRENCY,
+    async (batchIds) => {
+      const parsed: Array<{ id: string; song: ISong; channelId?: string }> = [];
+      try {
+        const response = await fetch(
+          `https://www.googleapis.com/youtube/v3/videos?` +
+            `part=contentDetails,snippet&id=${batchIds.join(",")}&key=${apiKey}`,
         );
-        const channelTitle = item.snippet?.channelTitle || "";
-        const channelId = item.snippet?.channelId;
-        const videoTitle = item.snippet?.title || "";
-        const thumbnail = getBestThumbnail(item.snippet?.thumbnails);
-        const publishedAt = item.snippet?.publishedAt;
-        const releaseDate = publishedAt ? new Date(publishedAt) : undefined;
 
-        // Track channel for artist image fetch
-        if (channelId) {
-          channelIds.add(channelId);
-          videoChannelMap.set(item.id, channelId);
+        if (!response.ok) {
+          console.error(`YouTube API error: ${response.status}`);
+          return parsed;
         }
 
-        // Clean up artist name
-        let artist = cleanArtistName(channelTitle);
+        const data = await response.json();
 
-        // If channel is generic like "Release", extract from title
-        if (isGenericArtist(artist)) {
-          const extracted = extractArtistFromTitle(videoTitle);
-          if (extracted) {
-            artist = extracted;
-          } else {
-            artist = "Unknown Artist";
+        for (const item of data.items || []) {
+          const duration = parseISO8601Duration(
+            item.contentDetails?.duration || "PT0S",
+          );
+          const channelTitle = item.snippet?.channelTitle || "";
+          const channelId = item.snippet?.channelId;
+          const videoTitle = item.snippet?.title || "";
+          const thumbnail = getBestThumbnail(item.snippet?.thumbnails);
+          const publishedAt = item.snippet?.publishedAt;
+          const releaseDate = publishedAt ? new Date(publishedAt) : undefined;
+
+          // Clean up artist name
+          let artist = cleanArtistName(channelTitle);
+
+          // If channel is generic like "Release", extract from title
+          if (isGenericArtist(artist)) {
+            const extracted = extractArtistFromTitle(videoTitle);
+            artist = extracted || "Unknown Artist";
           }
-        }
 
-        results.set(item.id, {
-          key: `${artist.toLowerCase()} - ${videoTitle.toLowerCase()}`,
-          youtubeId: item.id,
-          title: videoTitle,
-          artist,
-          duration,
-          thumbnail,
-          channelTitle,
-          releaseDate,
-        } as ISong);
+          parsed.push({
+            id: item.id,
+            channelId,
+            song: {
+              key: `${artist.toLowerCase()} - ${videoTitle.toLowerCase()}`,
+              youtubeId: item.id,
+              title: videoTitle,
+              artist,
+              duration,
+              thumbnail,
+              channelTitle,
+              releaseDate,
+            } as ISong,
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching YouTube metadata:", error);
       }
-    } catch (error) {
-      console.error("Error fetching YouTube metadata:", error);
+      return parsed;
+    },
+  );
+
+  // Merge parsed video results into shared state.
+  for (const parsed of videoBatchResults) {
+    for (const { id, song, channelId } of parsed) {
+      results.set(id, song);
+      if (channelId) {
+        channelIds.add(channelId);
+        videoChannelMap.set(id, channelId);
+      }
     }
   }
 
-  // Fetch channel thumbnails for artist images (batch)
+  // Fetch channel thumbnails for artist images (batched + concurrent).
   if (channelIds.size > 0) {
-    try {
-      const channelIdsArray = Array.from(channelIds);
-      const channelThumbnails = new Map<string, string>();
+    const channelIdsArray = Array.from(channelIds);
+    const channelBatches: string[][] = [];
+    for (let i = 0; i < channelIdsArray.length; i += YOUTUBE_BATCH_SIZE) {
+      channelBatches.push(channelIdsArray.slice(i, i + YOUTUBE_BATCH_SIZE));
+    }
 
-      for (let i = 0; i < channelIdsArray.length; i += YOUTUBE_BATCH_SIZE) {
-        const batchChannelIds = channelIdsArray.slice(
-          i,
-          i + YOUTUBE_BATCH_SIZE,
-        );
-        const channelResponse = await fetch(
-          `https://www.googleapis.com/youtube/v3/channels?` +
-            `part=snippet&id=${batchChannelIds.join(",")}&key=${YOUTUBE_API_KEY}`,
-        );
+    const channelBatchResults = await mapWithConcurrency(
+      channelBatches,
+      YOUTUBE_FETCH_CONCURRENCY,
+      async (batchChannelIds) => {
+        const parsed: Array<[string, string]> = [];
+        try {
+          const channelResponse = await fetch(
+            `https://www.googleapis.com/youtube/v3/channels?` +
+              `part=snippet&id=${batchChannelIds.join(",")}&key=${apiKey}`,
+          );
 
-        if (channelResponse.ok) {
-          const channelData = await channelResponse.json();
-          for (const channel of channelData.items || []) {
-            const artistImage = getBestThumbnail(channel.snippet?.thumbnails);
-            if (artistImage) {
-              channelThumbnails.set(channel.id, artistImage);
+          if (channelResponse.ok) {
+            const channelData = await channelResponse.json();
+            for (const channel of channelData.items || []) {
+              const artistImage = getBestThumbnail(channel.snippet?.thumbnails);
+              if (artistImage) {
+                parsed.push([channel.id, artistImage]);
+              }
             }
           }
+        } catch (error) {
+          console.error("Error fetching channel thumbnails:", error);
         }
-      }
+        return parsed;
+      },
+    );
 
-      // Attach artist images to results
-      for (const [videoId, channelId] of videoChannelMap) {
-        const song = results.get(videoId);
-        const artistImage = channelThumbnails.get(channelId);
-        if (song && artistImage) {
-          song.artistImage = artistImage;
-        }
+    const channelThumbnails = new Map<string, string>();
+    for (const parsed of channelBatchResults) {
+      for (const [channelId, artistImage] of parsed) {
+        channelThumbnails.set(channelId, artistImage);
       }
-    } catch (error) {
-      console.error("Error fetching channel thumbnails:", error);
+    }
+
+    // Attach artist images to results
+    for (const [videoId, channelId] of videoChannelMap) {
+      const song = results.get(videoId);
+      const artistImage = channelThumbnails.get(channelId);
+      if (song && artistImage) {
+        song.artistImage = artistImage;
+      }
     }
   }
 
@@ -290,7 +326,7 @@ export async function lookupSongs(videoIds: string[]): Promise<LookupResult> {
                 duration: song.duration,
                 channelTitle: song.channelTitle,
                 thumbnail: song.thumbnail,
-                // artistImage: song.artistImage,
+                artistImage: song.artistImage,
                 releaseDate: song.releaseDate,
               },
             },

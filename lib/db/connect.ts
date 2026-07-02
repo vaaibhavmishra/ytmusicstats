@@ -39,7 +39,7 @@ async function connectDB() {
     const opts = {
       dbName: "ytmusic-stats",
       bufferCommands: false,
-      maxPoolSize: 3,
+      maxPoolSize: 5,
       minPoolSize: 0,
       maxIdleTimeMS: 10000,
       serverSelectionTimeoutMS: 5000,
