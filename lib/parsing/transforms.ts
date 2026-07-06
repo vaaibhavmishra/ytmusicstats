@@ -111,7 +111,7 @@ export function cleanArtistName(artist: string): string {
  * Check if the artist/channel name is generic (like "Release", "Various Artists", etc.)
  */
 export function isGenericArtist(artist: string): boolean {
-  const genericNames = [
+  const genericNames = new Set([
     "release",
     "various artists",
     "various",
@@ -134,13 +134,10 @@ export function isGenericArtist(artist: string): boolean {
     "wave music",
     "vevo",
     "topic",
-    "",
-  ];
+  ]);
 
   const normalized = artist.toLowerCase().trim();
-  return genericNames.some(
-    (name) => normalized === name || (name && normalized.includes(name)),
-  );
+  return normalized === "" || genericNames.has(normalized);
 }
 
 /**

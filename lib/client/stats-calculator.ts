@@ -106,14 +106,3 @@ export async function calculateStats(
 
   return computeStats(entries, metadata, onProgress, yieldToBrowser);
 }
-
-/**
- * Process file and calculate stats in one go
- */
-export async function processFileAndCalculateStats(
-  entries: ParsedSongInfo[],
-  onProgress?: (progress: StatsProgress) => void,
-  metadata?: Map<string, ISong>,
-): Promise<IUserStats> {
-  return calculateStats(entries, onProgress, metadata);
-}

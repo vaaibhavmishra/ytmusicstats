@@ -1,6 +1,6 @@
 "use server";
 
-import { inArray } from "drizzle-orm";
+import { inArray, sql } from "drizzle-orm";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth/config";
 import { mapWithConcurrency } from "@/lib/concurrency";
@@ -317,20 +317,19 @@ export async function lookupSongs(videoIds: string[]): Promise<LookupResult> {
         newSongs.set(id, song);
       }
 
-      // Step 4: Save new songs to cache via upsert
+      // Step 4: Save new songs to cache via bulk upsert (one DB call per batch)
       if (newSongs.size > 0) {
-        const songsToUpsert = Array.from(newSongs.entries());
+        const songsToUpsert = Array.from(newSongs.values());
 
-        // Batch upserts to avoid query size limits
         for (let i = 0; i < songsToUpsert.length; i += DB_BATCH_SIZE) {
           const batch = songsToUpsert.slice(i, i + DB_BATCH_SIZE);
           try {
-            for (const [id, song] of batch) {
-              await db
-                .insert(songs)
-                .values({
-                  key: `${song.artist.toLowerCase()} - ${song.title.toLowerCase()}`,
-                  youtubeId: id,
+            await db
+              .insert(songs)
+              .values(
+                batch.map((song) => ({
+                  key: song.key,
+                  youtubeId: song.youtubeId as string,
                   title: song.title,
                   artist: song.artist,
                   duration: song.duration,
@@ -339,22 +338,22 @@ export async function lookupSongs(videoIds: string[]): Promise<LookupResult> {
                   artistImage: song.artistImage,
                   releaseDate: song.releaseDate,
                   updatedAt: new Date(),
-                })
-                .onConflictDoUpdate({
-                  target: songs.youtubeId,
-                  set: {
-                    key: `${song.artist.toLowerCase()} - ${song.title.toLowerCase()}`,
-                    title: song.title,
-                    artist: song.artist,
-                    duration: song.duration,
-                    channelTitle: song.channelTitle,
-                    thumbnail: song.thumbnail,
-                    artistImage: song.artistImage,
-                    releaseDate: song.releaseDate,
-                    updatedAt: new Date(),
-                  },
-                });
-            }
+                })),
+              )
+              .onConflictDoUpdate({
+                target: songs.youtubeId,
+                set: {
+                  key: sql`excluded.key`,
+                  title: sql`excluded.title`,
+                  artist: sql`excluded.artist`,
+                  duration: sql`excluded.duration`,
+                  channelTitle: sql`excluded.channel_title`,
+                  thumbnail: sql`excluded.thumbnail`,
+                  artistImage: sql`excluded.artist_image`,
+                  releaseDate: sql`excluded.release_date`,
+                  updatedAt: new Date(),
+                },
+              });
           } catch {
             // Ignore upsert errors (e.g. duplicate key on concurrent writes)
           }
@@ -363,15 +362,10 @@ export async function lookupSongs(videoIds: string[]): Promise<LookupResult> {
     }
 
     // Step 5: Merge cached + new songs
-    const allSongs: Record<string, ISong> = {};
-
-    for (const [id, song] of cachedMap) {
-      allSongs[id] = song;
-    }
-
-    for (const [id, song] of newSongs) {
-      allSongs[id] = song;
-    }
+    const allSongs: Record<string, ISong> = Object.fromEntries([
+      ...cachedMap,
+      ...newSongs,
+    ]);
 
     return {
       success: true,

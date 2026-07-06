@@ -7,8 +7,7 @@ import { lookupSongs } from "@/app/actions/songs";
 import { mapWithConcurrency } from "@/lib/concurrency";
 import type {
   FetchProgress,
-  ISong,
-  ParsedSongInfo,
+  ISong
 } from "@/lib/types/database";
 
 // Batch size for client-side processing. Each batch is one server-action
@@ -20,12 +19,9 @@ import type {
 const CLIENT_BATCH_SIZE = 500;
 
 // Number of lookup batches to run concurrently. Kept moderate to stay clear of
-// YouTube API rate limits and the Mongo Atlas M0 connection budget while still
-// cutting wall-clock ~4x versus sequential fetching.
+// YouTube API rate limits while still cutting wall-clock time versus sequential
+// fetching.
 const LOOKUP_CONCURRENCY = 4;
-
-// Re-export FetchProgress for convenience
-export type { FetchProgress } from "@/lib/types/database";
 
 /**
  * Fetch metadata for a list of unique video IDs using the server action.
@@ -105,37 +101,4 @@ export async function fetchSongMetadata(
   );
 
   return metadata;
-}
-
-/**
- * Get video ID from a parsed entry
- */
-export function getVideoIdFromEntry(entry: ParsedSongInfo): string | null {
-  return entry.youtubeId || null;
-}
-
-/**
- * Enrich entries with real metadata (duration, cleaned artist name)
- */
-export function enrichEntriesWithMetadata(
-  entries: ParsedSongInfo[],
-  metadata: Map<string, ISong>,
-): ParsedSongInfo[] {
-  return entries.map((entry) => {
-    const videoId = getVideoIdFromEntry(entry);
-
-    if (!videoId) return entry;
-
-    const songData = metadata.get(videoId);
-
-    if (!songData) return entry;
-
-    return {
-      ...entry,
-      // Use real duration from YouTube API
-      estimatedDuration: songData.duration,
-      // Use cleaned artist name (not "Release" or other generic names)
-      artist: songData.artist,
-    };
-  });
 }

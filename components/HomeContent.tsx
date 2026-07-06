@@ -144,13 +144,13 @@ export function HomeContent() {
           variants={itemVariants}
         >
           <div className="max-w-3xl mx-auto space-y-6">
-            <motion.h2
+            <motion.h1
               className="text-4xl md:text-6xl font-bold tracking-tight"
               variants={itemVariants}
             >
               Analyze Your
               <span className="text-primary"> YouTube Music</span> History
-            </motion.h2>
+            </motion.h1>
             <motion.p
               className="text-xl text-muted-foreground"
               variants={itemVariants}
@@ -184,7 +184,7 @@ export function HomeContent() {
         viewport={{ once: true, margin: "-100px" }}
       >
         <motion.div className="text-center mb-12" variants={itemVariants}>
-          <h3 className="text-3xl font-bold mb-4">Your Music Analytics</h3>
+          <h2 className="text-3xl font-bold mb-4">Your Music Analytics</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Transform your Google Takeout YouTube Music data into meaningful
             insights about your listening habits and musical preferences.
@@ -267,7 +267,7 @@ export function HomeContent() {
         viewport={{ once: true, margin: "-100px" }}
       >
         <motion.div className="text-center mb-16" variants={itemVariants}>
-          <h3 className="text-3xl font-bold mb-4">How It Works</h3>
+          <h2 className="text-3xl font-bold mb-4">How It Works</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
             Transform your YouTube Music data into meaningful insights in just a
             few simple steps
@@ -289,9 +289,9 @@ export function HomeContent() {
                   <span className="text-sm font-medium text-primary">
                     Step 1
                   </span>
-                  <h4 className="text-2xl font-bold">
+                  <h3 className="text-2xl font-bold">
                     Get Your Data from Google
-                  </h4>
+                  </h3>
                 </div>
               </div>
               <div className="space-y-4">
@@ -375,9 +375,9 @@ export function HomeContent() {
                   <span className="text-sm font-medium text-primary">
                     Step 2
                   </span>
-                  <h4 className="text-2xl font-bold">
+                  <h3 className="text-2xl font-bold">
                     Upload & Process Your Data
-                  </h4>
+                  </h3>
                 </div>
               </div>
               <div className="space-y-4">
@@ -433,9 +433,9 @@ export function HomeContent() {
                   <span className="text-sm font-medium text-primary">
                     Step 3
                   </span>
-                  <h4 className="text-2xl font-bold">
+                  <h3 className="text-2xl font-bold">
                     Explore Your Music Insights
-                  </h4>
+                  </h3>
                 </div>
               </div>
               <div className="space-y-4">
@@ -500,9 +500,9 @@ export function HomeContent() {
       >
         <div className="max-w-4xl mx-auto">
           <motion.div className="text-center mb-12" variants={itemVariants}>
-            <h3 className="text-3xl font-bold mb-4">
+            <h2 className="text-3xl font-bold mb-4">
               Open Source & Privacy First
-            </h3>
+            </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               Built by an indie developer with complete transparency. Your data
               stays private, and the code is open for everyone to review and
@@ -517,7 +517,7 @@ export function HomeContent() {
                   <div className="h-12 w-12 mx-auto mb-4 rounded-full bg-green-100 dark:bg-gray-300/20 flex items-center justify-center">
                     <Code className="h-6 w-6 " />
                   </div>
-                  <h4 className="font-semibold mb-2">100% Open Source</h4>
+                  <h3 className="font-semibold mb-2">100% Open Source</h3>
                   <p className="text-sm text-muted-foreground">
                     Every line of code is public on GitHub. Review the source,
                     contribute improvements, or run your own instance.
@@ -546,9 +546,9 @@ export function HomeContent() {
                       />
                     </svg>
                   </div>
-                  <h4 className="font-semibold mb-2">
+                  <h3 className="font-semibold mb-2">
                     Your Data, Your Control
-                  </h4>
+                  </h3>
                   <p className="text-sm text-muted-foreground">
                     No tracking, no ads, no data selling. As an indie project,
                     your privacy is the priority, not profit from your data.
@@ -563,7 +563,7 @@ export function HomeContent() {
                   <div className="h-12 w-12 mx-auto mb-4 rounded-full bg-purple-100 dark:bg-gray-300/20 flex items-center justify-center">
                     <Heart className="h-6 w-6" />
                   </div>
-                  <h4 className="font-semibold mb-2">Built with Passion</h4>
+                  <h3 className="font-semibold mb-2">Built with Passion</h3>
                   <p className="text-sm text-muted-foreground">
                     Created by a music lover for music lovers. No corporate
                     agenda, just a simple tool to explore your musical journey.
