@@ -1,10 +1,11 @@
+import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod/v4";
 import { auth } from "@/lib/auth/config";
-import connectDB from "@/lib/db/connect";
-import { UserStats } from "@/lib/db/models/UserStats";
+import { db } from "@/lib/db";
+import { userStats } from "@/lib/db/schema";
 import { updateUserStats } from "@/lib/services/user-stats";
-import type { ApiResponse, IUserStats } from "@/lib/types/database";
+import type { ApiResponse } from "@/lib/types/database";
 
 /**
  * Zod schema to validate incoming stats payloads.
@@ -87,13 +88,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    await connectDB();
+    const [statsRow] = await db
+      .select()
+      .from(userStats)
+      .where(eq(userStats.userId, session.user.id))
+      .limit(1);
 
-    const userStats: IUserStats | null = await UserStats.findOne({
-      userId: session.user.id,
-    });
-
-    if (!userStats) {
+    if (!statsRow) {
       return NextResponse.json(
         { success: false, error: "No user data found" },
         { status: 404 },
@@ -102,7 +103,7 @@ export async function GET(request: NextRequest) {
 
     const response: ApiResponse = {
       success: true,
-      data: userStats,
+      data: statsRow,
     };
 
     return NextResponse.json(response);
@@ -148,8 +149,6 @@ export async function POST(request: NextRequest) {
     }
 
     const stats = parseResult.data;
-
-    await connectDB();
 
     // Save the validated stats
     await updateUserStats(session.user.id, {

@@ -1,10 +1,11 @@
 "use server";
 
+import { inArray } from "drizzle-orm";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth/config";
 import { mapWithConcurrency } from "@/lib/concurrency";
-import connectDB from "@/lib/db/connect";
-import { Song } from "@/lib/db/models/Song";
+import { db } from "@/lib/db";
+import { songs } from "@/lib/db/schema";
 import {
   cleanArtistName,
   extractArtistFromTitle,
@@ -264,34 +265,38 @@ export async function lookupSongs(videoIds: string[]): Promise<LookupResult> {
     // Limit number of IDs to prevent abuse
     const limitedIds = videoIds.slice(0, MAX_VIDEO_IDS);
 
-    await connectDB();
-
-    // Step 1: Check cache for existing songs
-    const cachedSongs = await Song.find({
-      youtubeId: { $in: limitedIds },
-    }).lean();
-
+    // Step 1: Check cache for existing songs (batch to avoid query size limits)
+    const DB_BATCH_SIZE = 500;
     const cachedMap = new Map<string, ISong>();
-    for (const song of cachedSongs) {
-      let artist = song.artist;
 
-      // Re-check if cached artist is generic (old cache entries might have "Release")
-      if (isGenericArtist(artist)) {
-        const extracted = extractArtistFromTitle(song.title);
-        artist = extracted || "Unknown Artist";
+    for (let i = 0; i < limitedIds.length; i += DB_BATCH_SIZE) {
+      const batchIds = limitedIds.slice(i, i + DB_BATCH_SIZE);
+      const cachedSongs = await db
+        .select()
+        .from(songs)
+        .where(inArray(songs.youtubeId, batchIds));
+
+      for (const song of cachedSongs) {
+        let artist = song.artist;
+
+        // Re-check if cached artist is generic (old cache entries might have "Release")
+        if (isGenericArtist(artist)) {
+          const extracted = extractArtistFromTitle(song.title);
+          artist = extracted || "Unknown Artist";
+        }
+
+        cachedMap.set(song.youtubeId, {
+          key: song.key,
+          youtubeId: song.youtubeId,
+          title: song.title,
+          artist,
+          duration: song.duration,
+          channelTitle: song.channelTitle || song.artist,
+          thumbnail: song.thumbnail ?? undefined,
+          artistImage: song.artistImage ?? undefined,
+          releaseDate: song.releaseDate ?? undefined,
+        } as ISong);
       }
-
-      cachedMap.set(song.youtubeId, {
-        key: song.key,
-        youtubeId: song.youtubeId,
-        title: song.title,
-        artist,
-        duration: song.duration,
-        channelTitle: song.channelTitle || song.artist,
-        thumbnail: song.thumbnail,
-        artistImage: song.artistImage,
-        releaseDate: song.releaseDate,
-      } as ISong);
     }
 
     // Step 2: Find missing IDs (not in cache OR missing thumbnail)
@@ -312,32 +317,47 @@ export async function lookupSongs(videoIds: string[]): Promise<LookupResult> {
         newSongs.set(id, song);
       }
 
-      // Step 4: Save new songs to cache OR update existing ones with thumbnails
+      // Step 4: Save new songs to cache via upsert
       if (newSongs.size > 0) {
-        const bulkOps = Array.from(newSongs.values()).map((song) => ({
-          updateOne: {
-            filter: { youtubeId: song.youtubeId },
-            update: {
-              $set: {
-                key: `${song.artist.toLowerCase()} - ${song.title.toLowerCase()}`,
-                youtubeId: song.youtubeId,
-                title: song.title,
-                artist: song.artist,
-                duration: song.duration,
-                channelTitle: song.channelTitle,
-                thumbnail: song.thumbnail,
-                artistImage: song.artistImage,
-                releaseDate: song.releaseDate,
-              },
-            },
-            upsert: true,
-          },
-        }));
+        const songsToUpsert = Array.from(newSongs.entries());
 
-        try {
-          await Song.bulkWrite(bulkOps, { ordered: false });
-        } catch {
-          // Ignore bulk write errors (e.g. duplicate key on concurrent writes)
+        // Batch upserts to avoid query size limits
+        for (let i = 0; i < songsToUpsert.length; i += DB_BATCH_SIZE) {
+          const batch = songsToUpsert.slice(i, i + DB_BATCH_SIZE);
+          try {
+            for (const [id, song] of batch) {
+              await db
+                .insert(songs)
+                .values({
+                  key: `${song.artist.toLowerCase()} - ${song.title.toLowerCase()}`,
+                  youtubeId: id,
+                  title: song.title,
+                  artist: song.artist,
+                  duration: song.duration,
+                  channelTitle: song.channelTitle,
+                  thumbnail: song.thumbnail,
+                  artistImage: song.artistImage,
+                  releaseDate: song.releaseDate,
+                  updatedAt: new Date(),
+                })
+                .onConflictDoUpdate({
+                  target: songs.youtubeId,
+                  set: {
+                    key: `${song.artist.toLowerCase()} - ${song.title.toLowerCase()}`,
+                    title: song.title,
+                    artist: song.artist,
+                    duration: song.duration,
+                    channelTitle: song.channelTitle,
+                    thumbnail: song.thumbnail,
+                    artistImage: song.artistImage,
+                    releaseDate: song.releaseDate,
+                    updatedAt: new Date(),
+                  },
+                });
+            }
+          } catch {
+            // Ignore upsert errors (e.g. duplicate key on concurrent writes)
+          }
         }
       }
     }

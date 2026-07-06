@@ -16,11 +16,11 @@ Package manager is **pnpm** (v11). Node 18+.
 
 No test runner is configured. The pure logic modules (`lib/parsing/*`, `lib/concurrency.ts`) are deliberately written free of DOM/`self`/server globals so they *can* be unit-tested in Node if a runner is added.
 
-Environment variables live in `.env.local` (not `.env`): `MONGODB_URI`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `YOUTUBE_API_KEY`, `NEXT_PUBLIC_APP_URL`.
+Environment variables live in `.env.local` (not `.env`): `DATABASE_URL` (PostgreSQL connection string), `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `YOUTUBE_API_KEY`, `NEXT_PUBLIC_APP_URL`.
 
 ## Stack
 
-Next.js 16 (App Router, RSC) · React 19 with the **React Compiler enabled** (`reactCompiler: true` in `next.config.ts`) · TypeScript · Tailwind CSS v4 · shadcn/ui (new-york style, in `components/ui`) · MongoDB via both Mongoose (app data) and the native driver (Better Auth) · Better Auth (email/password + Google OAuth). Path alias `@/*` maps to the repo root.
+Next.js 16 (App Router, RSC) · React 19 with the **React Compiler enabled** (`reactCompiler: true` in `next.config.ts`) · TypeScript · Tailwind CSS v4 · shadcn/ui (new-york style, in `components/ui`) · PostgreSQL via Drizzle ORM · Better Auth (email/password + Google OAuth, using Drizzle adapter). Path alias `@/*` maps to the repo root.
 
 ## Architecture — the data pipeline
 
@@ -53,10 +53,10 @@ Computation lives in **pure, global-free modules** so the same code runs in a We
 
 ## Backend specifics
 
-- **Two DB connections, by design.** Better Auth uses the native MongoDB driver (`lib/auth/config.ts`); app data uses Mongoose (`lib/db/connect.ts`). Both target the `ytmusic-stats` db and both cache the connection/client on `globalThis` to survive hot reloads and avoid connection blowup. Always `await connectDB()` before Mongoose queries.
-- **`lookupSongs`** (`app/actions/songs.ts`) is the metadata resolver: checks the `Song` cache collection, fetches misses from the YouTube Data API (batched 50 IDs/request, concurrency-limited via `mapWithConcurrency`), upserts results into cache via `bulkWrite`. Guards with auth + origin checks and caps input at 8000 IDs.
-- **`/api/stats`** — GET returns the caller's `UserStats`; POST accepts client-computed stats validated against an explicit Zod schema (arbitrary fields rejected). Auth via `auth.api.getSession`.
-- Models: `lib/db/models/Song.ts` (metadata cache, keyed by `youtubeId`), `lib/db/models/UserStats.ts` (one aggregated doc per user).
+- **Single DB via Drizzle ORM.** All tables (auth + app data) live in a single PostgreSQL database. The Drizzle client is in `lib/db/index.ts` (stateless HTTP driver — no connection pooling or `connectDB()` calls needed). Schema is in `lib/db/schema.ts`.
+- **`lookupSongs`** (`app/actions/songs.ts`) is the metadata resolver: checks the `songs` table cache via `inArray()`, fetches misses from the YouTube Data API (batched 50 IDs/request, concurrency-limited via `mapWithConcurrency`), upserts results into cache via `onConflictDoUpdate`. Guards with auth + origin checks and caps input at 8000 IDs.
+- **`/api/stats`** — GET returns the caller's `user_stats` row; POST accepts client-computed stats validated against an explicit Zod schema (arbitrary fields rejected). Auth via `auth.api.getSession`.
+- Tables: `songs` (metadata cache, keyed by `youtube_id`), `user_stats` (one aggregated row per user), plus Better Auth tables (`user`, `session`, `account`, `verification`).
 - Shared types are centralized in `lib/types/database.ts`.
 
 ## Conventions

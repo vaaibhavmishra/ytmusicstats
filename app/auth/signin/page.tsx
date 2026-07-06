@@ -1,5 +1,6 @@
 "use client";
 
+import { IconBrandGoogleFilled } from "@tabler/icons-react";
 import { LoaderCircle, Music } from "lucide-react";
 import { motion, type Variants } from "motion/react";
 import Link from "next/link";
@@ -122,6 +123,7 @@ function SignInForm() {
                 className="w-full"
                 type="button"
               >
+                <IconBrandGoogleFilled />
                 Continue with Google
               </Button>
 

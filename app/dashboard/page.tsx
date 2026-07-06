@@ -1,9 +1,10 @@
+import { eq } from "drizzle-orm";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/config";
-import connectDB from "@/lib/db/connect";
-import { UserStats } from "@/lib/db/models/UserStats";
+import { db } from "@/lib/db";
+import { userStats } from "@/lib/db/schema";
 import type { IUserStats } from "@/lib/types/database";
 import { DashboardContent } from "./components/DashboardContent";
 
@@ -30,14 +31,15 @@ export default async function DashboardPage() {
   }
 
   // Fetch stats server-side to eliminate client-side waterfall
-  await connectDB();
-  const statsDoc = await UserStats.findOne({
-    userId: session.user.id,
-  }).lean();
+  const [statsRow] = await db
+    .select()
+    .from(userStats)
+    .where(eq(userStats.userId, session.user.id))
+    .limit(1);
 
-  // Serialize the Mongoose document to a plain object for the client component
-  const stats: IUserStats | null = statsDoc
-    ? JSON.parse(JSON.stringify(statsDoc))
+  // Drizzle returns plain objects — no serialization hack needed
+  const stats: IUserStats | null = statsRow
+    ? (statsRow as unknown as IUserStats)
     : null;
 
   return (

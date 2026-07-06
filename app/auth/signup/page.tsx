@@ -1,5 +1,7 @@
 "use client";
 
+import { Separator } from "@radix-ui/react-separator";
+import { IconBrandGoogleFilled } from "@tabler/icons-react";
 import { LoaderCircle, Music } from "lucide-react";
 import { motion, type Variants } from "motion/react";
 import Link from "next/link";
@@ -17,7 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageLoading } from "@/components/ui/loading";
-import { signUp } from "@/lib/auth/client";
+import { signIn, signUp } from "@/lib/auth/client";
 
 const containerVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
@@ -52,6 +54,19 @@ function SignUpForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirectTo") || "/dashboard";
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await signIn.social({
+        provider: "google",
+        callbackURL: redirectTo,
+      });
+    } catch (_error) {
+      toast.error("Google sign in failed", {
+        description: "Please try again later.",
+      });
+    }
+  };
 
   const handleEmailSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,6 +135,26 @@ function SignUpForm() {
           </motion.div>
           <motion.div variants={itemVariants}>
             <CardContent className="space-y-4">
+              <Button
+                onClick={handleGoogleSignIn}
+                variant="outline"
+                className="w-full"
+                type="button"
+              >
+                <IconBrandGoogleFilled />
+                Continue with Google
+              </Button>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <Separator className="w-full" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    Or continue with
+                  </span>
+                </div>
+              </div>
               <form onSubmit={handleEmailSignUp} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Full Name</Label>

@@ -1,26 +1,13 @@
-import { betterAuth } from "better-auth";
-import { mongodbAdapter } from "better-auth/adapters/mongodb";
-import { MongoClient } from "mongodb";
-
-const uri = process.env.MONGODB_URI as string;
-const globalForMongo = globalThis as unknown as {
-  _authMongoClient?: MongoClient;
-};
-
-const client =
-  globalForMongo._authMongoClient ??
-  new MongoClient(uri, {
-    maxPoolSize: 3,
-    minPoolSize: 0,
-    maxIdleTimeMS: 10000,
-  });
-
-globalForMongo._authMongoClient = client;
-
-const db = client.db("ytmusic-stats");
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { betterAuth } from "better-auth/minimal";
+import { db } from "@/lib/db";
+import * as schema from "@/lib/db/schema";
 
 export const auth = betterAuth({
-  database: mongodbAdapter(db),
+  database: drizzleAdapter(db, {
+    provider: "pg",
+    schema,
+  }),
   emailAndPassword: {
     enabled: true,
   },
