@@ -327,9 +327,31 @@ export async function computeStats(
   }
 
   // Precompute per-entry full song lengths, then derive the effective listen
-  // duration for each play by capping it at the gap until the next play began.
+  // duration for each play using a three-tier heuristic:
+  //
+  //   1. **Fully played (auto-play)** — gap ≈ song length (within a tolerance).
+  //      YouTube Music auto-plays the next track with only a brief transition
+  //      gap. When the gap closely matches the song's duration, the listener
+  //      almost certainly heard the whole track. Count the full song length.
+  //
+  //   2. **Skipped** — gap < 30% of song length. The user switched away or
+  //      skipped early. Count only the actual gap (≈ time heard).
+  //
+  //   3. **Partial listen** — gap falls between the skip and auto-play
+  //      thresholds. The listener heard a portion of the track. Count the gap.
+  //
+  // When the gap *exceeds* the song length (idle time after the song ended),
+  // tier 1 catches it and counts just the song length — never the idle time.
+  //
   // This needs chronological order, which the raw `entries` array may not be in,
   // so we sort a lightweight index array rather than the entries themselves.
+
+  // Tolerance in seconds for auto-play detection: accounts for buffering,
+  // transition animations, and small clock skew between entries.
+  const AUTOPLAY_BUFFER_SECS = 15;
+  // Fraction of song length below which a play is considered a skip.
+  const SKIP_THRESHOLD = 0.3;
+
   for (let j = 0; j < entries.length; j++) {
     songLengths[j] = getDuration(entries[j]);
   }
@@ -349,10 +371,20 @@ export async function computeStats(
     const gapSeconds =
       (entries[nextIdx].playedAt.getTime() - entries[idx].playedAt.getTime()) /
       1000;
-    // Count the smaller of the track's own length and the time before the next
-    // track started. Clamped to >= 0 so duplicate/out-of-order timestamps can
-    // never subtract from a day's total.
-    durations[idx] = Math.max(0, Math.min(fullLength, gapSeconds));
+
+    // Clamp negative gaps (duplicate/out-of-order timestamps) to zero.
+    const clampedGap = Math.max(0, gapSeconds);
+
+    if (clampedGap >= fullLength - AUTOPLAY_BUFFER_SECS) {
+      // Tier 1: gap ≈ song length or longer → fully played (auto-play / idle).
+      durations[idx] = fullLength;
+    } else if (clampedGap < fullLength * SKIP_THRESHOLD) {
+      // Tier 2: very short gap → likely a skip. Count actual listen time.
+      durations[idx] = clampedGap;
+    } else {
+      // Tier 3: partial listen — count the gap as actual listen time.
+      durations[idx] = clampedGap;
+    }
   }
 
   // Process entries in chunks (chunking only affects progress cadence / optional
@@ -364,9 +396,10 @@ export async function computeStats(
       const entry = entries[j];
       const artist = getArtist(entry);
       const songKey = createSongKey(artist, entry.title);
-      // `duration` is the effective time listened (gap-capped); `songLength` is
-      // the track's own full length. Time-listened totals use `duration`;
-      // song-length stats use `songLength`.
+      // `duration` is the effective time listened (three-tier heuristic: fully
+      // played / skipped / partial); `songLength` is the track's own full
+      // length. Time-listened totals use `duration`; song-length stats use
+      // `songLength`.
       const duration = durations[j];
       const songLength = songLengths[j];
       const dateStr = toLocalDateKey(entry.playedAt);
