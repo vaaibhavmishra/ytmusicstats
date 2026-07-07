@@ -669,8 +669,8 @@ export async function computeStats(
   const stats: IUserStats = {
     totalSongs: songMap.size,
     totalArtists: artistMap.size,
-    totalPlaytime,
-    averageSongLength,
+    totalPlaytime: Math.round(totalPlaytime),
+    averageSongLength: Math.round(averageSongLength),
     topArtist: topArtists[0]?.name,
     topSong: topSongs[0]
       ? `${topSongs[0].artist} - ${topSongs[0].title}`
@@ -679,14 +679,14 @@ export async function computeStats(
     lastPlayDate,
     lastUpdated: new Date(),
     totalListens,
-    monthlyPlaytime,
-    dailyAverageListens,
-    dailyAveragePlaytime,
+    monthlyPlaytime: Math.round(monthlyPlaytime),
+    dailyAverageListens: Math.round(dailyAverageListens),
+    dailyAveragePlaytime: Math.round(dailyAveragePlaytime),
     longestListenDay: longestDay.date
       ? new Date(`${longestDay.date}T00:00:00`)
       : undefined,
-    longestListenDayDuration: longestDay.totalDuration,
-    longestSession,
+    longestListenDayDuration: Math.round(longestDay.totalDuration),
+    longestSession: Math.round(longestSession),
     topSongs,
     topArtists,
     newArtistsThisMonth,
