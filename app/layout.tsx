@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 const siteUrl =
-  process.env.NEXT_PUBLIC_APP_URL || "https://ytmusic-stats.vercel.app";
+  process.env.NEXT_PUBLIC_APP_URL || "https://ytmusicstats.shipby.me";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
