@@ -178,16 +178,27 @@ export async function parseFile(
   onProgress?.({ stage: "reading", progress: 0 });
 
   if (shouldUseWorkerPool(file)) {
+    // Read the file once as an ArrayBuffer upfront. If the worker pool fails,
+    // we decode this buffer to text instead of re-reading the file.
+    const buffer = await file.arrayBuffer();
+
     try {
-      return await parseWithWorkerPool(file, onProgress);
+      return await parseWithWorkerPool(buffer, file.size, onProgress);
     } catch (error) {
       // Worker path couldn't complete — fall back to single-thread parsing.
       if (!(error instanceof WorkerPoolFallback)) {
         console.warn("Worker pool parsing failed, falling back:", error);
       }
     }
+
+    // Decode the already-read buffer instead of calling file.text() again.
+    const text = new TextDecoder().decode(buffer);
+    onProgress?.({ stage: "reading", progress: 5 });
+
+    return parseGoogleTakeoutFile(text, onProgress);
   }
 
+  // Small file / unsupported env — read as text directly (no worker attempted).
   const text = await file.text();
   onProgress?.({ stage: "reading", progress: 5 });
 

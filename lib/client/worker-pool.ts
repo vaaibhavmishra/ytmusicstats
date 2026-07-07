@@ -72,7 +72,19 @@ export class WorkerPoolFallback extends Error {
 function getWorkerCount(): number {
   const cores =
     typeof navigator !== "undefined" ? navigator.hardwareConcurrency || 4 : 4;
-  return Math.max(2, Math.min(cores, MAX_WORKERS));
+
+  // Cap by device memory when available to avoid OOM on low-RAM devices.
+  const deviceMemory =
+    typeof navigator !== "undefined"
+      ? (navigator as unknown as { deviceMemory?: number }).deviceMemory
+      : undefined;
+  let memCap = MAX_WORKERS;
+  if (deviceMemory !== undefined) {
+    if (deviceMemory <= 2) memCap = 2;
+    else if (deviceMemory <= 4) memCap = 4;
+  }
+
+  return Math.max(2, Math.min(cores, memCap, MAX_WORKERS));
 }
 
 /**
@@ -93,7 +105,14 @@ async function scanInWorker(
   try {
     return await new Promise<{ ranges: Uint32Array; buffer: ArrayBuffer }>(
       (resolve, reject) => {
+        // Safety timeout — if the scanner doesn't respond within 30s, bail.
+        const timeout = setTimeout(() => {
+          worker.terminate();
+          reject(new WorkerPoolFallback("scanner timed out"));
+        }, 30_000);
+
         worker.onmessage = (event: MessageEvent<ScanWorkerMessage>) => {
+          clearTimeout(timeout);
           const msg = event.data;
           if (msg.ok) {
             resolve({ ranges: msg.ranges, buffer: msg.buffer });
@@ -102,9 +121,11 @@ async function scanInWorker(
           }
         };
         worker.onerror = (event) => {
+          clearTimeout(timeout);
           reject(new WorkerPoolFallback(`scanner crashed: ${event.message}`));
         };
         worker.onmessageerror = () => {
+          clearTimeout(timeout);
           reject(
             new WorkerPoolFallback("scanner message deserialization error"),
           );
@@ -139,12 +160,11 @@ export function shouldUseWorkerPool(file: File): boolean {
  * error) if it cannot complete — the caller should fall back.
  */
 export async function parseWithWorkerPool(
-  file: File,
+  arrayBuffer: ArrayBuffer,
+  _fileSize: number,
   onProgress?: (progress: ParseProgress) => void,
 ): Promise<ParseResult> {
   onProgress?.({ stage: "reading", progress: 0 });
-
-  const arrayBuffer = await file.arrayBuffer();
 
   onProgress?.({ stage: "parsing", progress: 5 });
 
@@ -201,6 +221,9 @@ export async function parseWithWorkerPool(
         });
       };
 
+      // Track per-worker timeouts so they can be cleared on completion.
+      const timeouts: ReturnType<typeof setTimeout>[] = [];
+
       for (let shardIndex = 0; shardIndex < shardCount; shardIndex++) {
         const firstElem = shardIndex * perShard;
         const lastElem = Math.min(firstElem + perShard, elementCount) - 1;
@@ -213,12 +236,20 @@ export async function parseWithWorkerPool(
         );
         workers.push(worker);
 
+        // Safety timeout — if this parser worker doesn't finish within 60s, bail.
+        const timeout = setTimeout(() => {
+          worker.terminate();
+          fail(new WorkerPoolFallback("parser worker timed out"));
+        }, 60_000);
+        timeouts.push(timeout);
+
         worker.onmessage = (event: MessageEvent<WorkerMessage>) => {
           const msg = event.data;
           if (msg.type === "progress") {
             processedByShard[msg.shardIndex] = msg.processed;
             reportProgress();
           } else if (msg.type === "result") {
+            clearTimeout(timeouts[msg.shardIndex]);
             results[msg.shardIndex] = {
               entries: msg.entries,
               uniqueIds: msg.uniqueIds,
@@ -233,14 +264,17 @@ export async function parseWithWorkerPool(
               resolve();
             }
           } else {
+            clearTimeout(timeouts[msg.shardIndex]);
             fail(new WorkerPoolFallback(`worker shard error: ${msg.message}`));
           }
         };
 
         worker.onerror = (event) => {
+          clearTimeout(timeouts[shardIndex]);
           fail(new WorkerPoolFallback(`worker crashed: ${event.message}`));
         };
         worker.onmessageerror = () => {
+          clearTimeout(timeouts[shardIndex]);
           fail(new WorkerPoolFallback("worker message deserialization error"));
         };
 

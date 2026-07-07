@@ -13,8 +13,8 @@ import {
   calculateStats,
   type StatsProgress,
 } from "@/lib/client/stats-calculator";
-import { type FetchProgress, fetchSongMetadata } from "@/lib/client/youtube";
-import type { ParseProgress } from "@/lib/types/database";
+import { fetchSongMetadata } from "@/lib/client/youtube";
+import type { FetchProgress, ParseProgress } from "@/lib/types/database";
 
 type ProcessingStage =
   | "idle"
@@ -56,17 +56,16 @@ export function UploadArea() {
   const processFile = useCallback(
     async (file: File) => {
       setIsProcessing(true);
-      setStage("reading");
+      setStage("parsing");
       setProgress(0);
 
       try {
         // Step 1: Parse the file
-        setStage("parsing");
         const parseResult = await parseFile(
           file,
           (parseProgress: ParseProgress) => {
-            // Map parse progress to 0-50%
-            const mappedProgress = Math.round(parseProgress.progress * 0.5);
+            // Map parse progress to 0-45%
+            const mappedProgress = Math.round(parseProgress.progress * 0.45);
             setProgress(mappedProgress);
           },
         );
@@ -83,18 +82,17 @@ export function UploadArea() {
 
         // Step 2: Fetch song metadata (duration, cleaned artist names)
         setStage("fetching");
-        setProgress(55);
 
         const metadata = await fetchSongMetadata(
           parseResult.uniqueVideoIds,
           (metaProgress) => {
             setMetadataStats(metaProgress);
-            // Map metadata progress to 50-70%
+            // Map metadata progress to 45-75%
             const percent =
               metaProgress.total > 0
                 ? (metaProgress.processed / metaProgress.total) * 100
                 : 100;
-            setProgress(50 + Math.round(percent * 0.2));
+            setProgress(45 + Math.round(percent * 0.3));
           },
         );
 
@@ -103,9 +101,9 @@ export function UploadArea() {
         const stats = await calculateStats(
           parseResult.entries,
           (statsProgress: StatsProgress) => {
-            // Map stats progress to 70-90%
+            // Map stats progress to 75-95%
             const mappedProgress =
-              70 + Math.round(statsProgress.progress * 0.2);
+              75 + Math.round(statsProgress.progress * 0.2);
             setProgress(mappedProgress);
           },
           metadata, // Pass metadata for accurate durations
@@ -120,7 +118,7 @@ export function UploadArea() {
 
         // Step 4: Save to server
         setStage("saving");
-        setProgress(92);
+        setProgress(95);
 
         const response = await fetch("/api/stats", {
           method: "POST",

@@ -5,23 +5,20 @@
 
 import { lookupSongs } from "@/app/actions/songs";
 import { mapWithConcurrency } from "@/lib/concurrency";
-import type {
-  FetchProgress,
-  ISong
-} from "@/lib/types/database";
+import type { FetchProgress, ISong } from "@/lib/types/database";
 
 // Batch size for client-side processing. Each batch is one server-action
 // round-trip (auth + DB connect + origin check happen once per call), so larger
 // batches cut fixed per-call overhead. The server chunks internally by 50 for
 // the YouTube API, so this only affects round-trip count and progress
-// granularity — kept large enough to amortize overhead, small enough to still
-// surface incremental progress.
-const CLIENT_BATCH_SIZE = 500;
+// granularity — kept at 200 to balance per-call overhead against finer-grained
+// progress updates.
+const CLIENT_BATCH_SIZE = 200;
 
-// Number of lookup batches to run concurrently. Kept moderate to stay clear of
+// Number of lookup batches to run concurrently. Kept at 3 to stay clear of
 // YouTube API rate limits while still cutting wall-clock time versus sequential
 // fetching.
-const LOOKUP_CONCURRENCY = 4;
+const LOOKUP_CONCURRENCY = 3;
 
 /**
  * Fetch metadata for a list of unique video IDs using the server action.

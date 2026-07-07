@@ -262,8 +262,8 @@ export async function lookupSongs(videoIds: string[]): Promise<LookupResult> {
       return { success: false, error: "Invalid video IDs" };
     }
 
-    // Limit number of IDs to prevent abuse
-    const limitedIds = videoIds.slice(0, MAX_VIDEO_IDS);
+    // Deduplicate and limit number of IDs to prevent abuse
+    const limitedIds = [...new Set(videoIds)].slice(0, MAX_VIDEO_IDS);
 
     // Step 1: Check cache for existing songs (batch to avoid query size limits)
     const DB_BATCH_SIZE = 500;
@@ -299,19 +299,14 @@ export async function lookupSongs(videoIds: string[]): Promise<LookupResult> {
       }
     }
 
-    // Step 2: Find missing IDs (not in cache OR missing thumbnail)
+    // Step 2: Find IDs not present in cache
     const missingIds = limitedIds.filter((id) => !cachedMap.has(id));
-    const idsNeedingThumbnails = limitedIds.filter((id) => {
-      const cached = cachedMap.get(id);
-      return cached && !cached.thumbnail;
-    });
 
-    // Step 3: Fetch missing from YouTube API (including ones needing thumbnails)
-    const idsToFetch = [...new Set([...missingIds, ...idsNeedingThumbnails])];
+    // Step 3: Fetch missing from YouTube API
     const newSongs = new Map<string, ISong>();
 
-    if (idsToFetch.length > 0 && YOUTUBE_API_KEY) {
-      const fetchedSongs = await fetchFromYouTubeAPI(idsToFetch);
+    if (missingIds.length > 0 && YOUTUBE_API_KEY) {
+      const fetchedSongs = await fetchFromYouTubeAPI(missingIds);
 
       for (const [id, song] of fetchedSongs) {
         newSongs.set(id, song);

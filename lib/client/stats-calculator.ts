@@ -54,23 +54,34 @@ function calculateStatsInWorker(
   });
 
   return new Promise<IUserStats>((resolve, reject) => {
+    // Safety timeout — if the stats worker doesn't finish within 60s, bail to
+    // inline computation.
+    const timeout = setTimeout(() => {
+      worker.terminate();
+      reject(new Error("stats worker timed out"));
+    }, 60_000);
+
     worker.onmessage = (event: MessageEvent<StatsWorkerMessage>) => {
       const msg = event.data;
       if (msg.type === "progress") {
         onProgress?.(msg.progress);
       } else if (msg.type === "result") {
+        clearTimeout(timeout);
         worker.terminate();
         resolve(msg.stats);
       } else {
+        clearTimeout(timeout);
         worker.terminate();
         reject(new Error(msg.message));
       }
     };
     worker.onerror = (event) => {
+      clearTimeout(timeout);
       worker.terminate();
       reject(new Error(`stats worker crashed: ${event.message}`));
     };
     worker.onmessageerror = () => {
+      clearTimeout(timeout);
       worker.terminate();
       reject(new Error("stats worker message deserialization error"));
     };
