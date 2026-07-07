@@ -1,5 +1,5 @@
-import { cn } from "@/lib/utils";
 import { Music } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface LoadingProps {
   /**

@@ -22,6 +22,8 @@ export interface ParseProgress {
 export interface ParseResult {
   /** Array of successfully parsed song entries */
   entries: ParsedSongInfo[];
+  /** De-duplicated YouTube video IDs across all entries (collected during parsing) */
+  uniqueVideoIds: string[];
   /** Total number of entries found in the file */
   totalEntries: number;
   /** Number of entries identified as music */

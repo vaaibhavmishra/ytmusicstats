@@ -8,13 +8,13 @@ import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { getDeviceCapability, parseFile } from "@/lib/client/parser";
+import { parseFile } from "@/lib/client/parser";
 import {
   calculateStats,
   type StatsProgress,
 } from "@/lib/client/stats-calculator";
-import { type FetchProgress, fetchSongMetadata } from "@/lib/client/youtube";
-import type { ParseProgress } from "@/lib/types/database";
+import { fetchSongMetadata } from "@/lib/client/youtube";
+import type { FetchProgress, ParseProgress } from "@/lib/types/database";
 
 type ProcessingStage =
   | "idle"
@@ -56,20 +56,16 @@ export function UploadArea() {
   const processFile = useCallback(
     async (file: File) => {
       setIsProcessing(true);
-      setStage("reading");
+      setStage("parsing");
       setProgress(0);
-
-      const capability = getDeviceCapability();
-      console.log(`Processing on ${capability} capability device`);
 
       try {
         // Step 1: Parse the file
-        setStage("parsing");
         const parseResult = await parseFile(
           file,
           (parseProgress: ParseProgress) => {
-            // Map parse progress to 0-50%
-            const mappedProgress = Math.round(parseProgress.progress * 0.5);
+            // Map parse progress to 0-45%
+            const mappedProgress = Math.round(parseProgress.progress * 0.45);
             setProgress(mappedProgress);
           },
         );
@@ -84,37 +80,30 @@ export function UploadArea() {
           );
         }
 
-        console.log(
-          `Parsed ${parseResult.entries.length} music entries from ${parseResult.totalEntries} total`,
-        );
-
         // Step 2: Fetch song metadata (duration, cleaned artist names)
         setStage("fetching");
-        setProgress(55);
 
         const metadata = await fetchSongMetadata(
-          parseResult.entries,
+          parseResult.uniqueVideoIds,
           (metaProgress) => {
             setMetadataStats(metaProgress);
-            // Map metadata progress to 50-70%
+            // Map metadata progress to 45-75%
             const percent =
               metaProgress.total > 0
                 ? (metaProgress.processed / metaProgress.total) * 100
                 : 100;
-            setProgress(50 + Math.round(percent * 0.2));
+            setProgress(45 + Math.round(percent * 0.3));
           },
         );
-
-        console.log(`Fetched metadata for ${metadata.size} unique songs`);
 
         // Step 3: Calculate statistics with real durations
         setStage("calculating");
         const stats = await calculateStats(
           parseResult.entries,
           (statsProgress: StatsProgress) => {
-            // Map stats progress to 70-90%
+            // Map stats progress to 75-95%
             const mappedProgress =
-              70 + Math.round(statsProgress.progress * 0.2);
+              75 + Math.round(statsProgress.progress * 0.2);
             setProgress(mappedProgress);
           },
           metadata, // Pass metadata for accurate durations
@@ -127,15 +116,9 @@ export function UploadArea() {
           totalListens: stats.totalListens,
         });
 
-        console.log("Stats calculated:", {
-          totalSongs: stats.totalSongs,
-          totalArtists: stats.totalArtists,
-          totalListens: stats.totalListens,
-        });
-
         // Step 4: Save to server
         setStage("saving");
-        setProgress(92);
+        setProgress(95);
 
         const response = await fetch("/api/stats", {
           method: "POST",
@@ -202,7 +185,7 @@ export function UploadArea() {
         "application/json": [".json"],
       },
       maxFiles: 1,
-      maxSize: 10 * 1024 * 1024,
+      maxSize: 100 * 1024 * 1024,
       disabled: isProcessing || stage === "success",
     });
 
@@ -266,7 +249,7 @@ export function UploadArea() {
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs text-muted-foreground">
                   <span>✓ JSON files only</span>
-                  <span>✓ Max 10MB</span>
+                  <span>✓ Max 100MB</span>
                   <span>✓ Processed locally</span>
                 </div>
               </div>

@@ -1,19 +1,17 @@
 "use client";
 
-import {
-  forwardRef,
-  useImperativeHandle,
-  useEffect,
-  useRef,
-  useMemo,
-  FC,
-  ReactNode,
-} from "react";
-
-import * as THREE from "three";
-
-import { Canvas, useFrame } from "@react-three/fiber";
 import { PerspectiveCamera } from "@react-three/drei";
+import { Canvas, useFrame } from "@react-three/fiber";
+import {
+  type FC,
+  forwardRef,
+  type ReactNode,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+} from "react";
+import * as THREE from "three";
 import { degToRad } from "three/src/math/MathUtils.js";
 
 type UniformValue = THREE.IUniform<unknown> | unknown;
@@ -203,9 +201,10 @@ const Beams: FC<BeamsProps> = ({
   scale = 0.2,
   rotation = 0,
 }) => {
-  const meshRef = useRef<
-    THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>
-  >(null!);
+  const meshRef = useRef<THREE.Mesh<
+    THREE.BufferGeometry,
+    THREE.ShaderMaterial
+  > | null>(null);
 
   const beamMaterial = useMemo(
     () =>
@@ -349,16 +348,23 @@ const MergedPlanes = forwardRef<
     height: number;
   }
 >(({ material, width, count, height }, ref) => {
-  const mesh = useRef<THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>>(
-    null!,
+  const mesh = useRef<THREE.Mesh<
+    THREE.BufferGeometry,
+    THREE.ShaderMaterial
+  > | null>(null);
+  useImperativeHandle(
+    ref,
+    () =>
+      mesh.current as THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>,
   );
-  useImperativeHandle(ref, () => mesh.current);
   const geometry = useMemo(
     () => createStackedPlanesBufferGeometry(count, width, height, 0, 100),
     [count, width, height],
   );
   useFrame((_, delta) => {
-    mesh.current.material.uniforms.time.value += 0.1 * delta;
+    if (mesh.current) {
+      mesh.current.material.uniforms.time.value += 0.1 * delta;
+    }
   });
   return <mesh ref={mesh} geometry={geometry} material={material} />;
 });
@@ -387,7 +393,7 @@ const DirLight: FC<{ position: [number, number, number]; color: string }> = ({
   position,
   color,
 }) => {
-  const dir = useRef<THREE.DirectionalLight>(null!);
+  const dir = useRef<THREE.DirectionalLight | null>(null);
   useEffect(() => {
     if (!dir.current) return;
     const cam = dir.current.shadow.camera as THREE.Camera & {

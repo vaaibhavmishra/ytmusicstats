@@ -7,18 +7,24 @@ import {
   Code,
   Download,
   FileText,
-  Github,
   Heart,
-  Linkedin,
   Music,
   TrendingUp,
-  Twitter,
   Upload,
 } from "lucide-react";
 import { motion, type Variants } from "motion/react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import Beams from "@/components/Beams";
+import Script from "next/script";
 import { Button } from "@/components/ui/button";
+
+const Beams = dynamic(() => import("@/components/Beams"), { ssr: false });
+
+import {
+  IconBrandGithub,
+  IconBrandLinkedin,
+  IconBrandTwitter,
+} from "@tabler/icons-react";
 import {
   Card,
   CardContent,
@@ -61,8 +67,61 @@ const heroVariants: Variants = {
 };
 
 export function HomeContent() {
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: "How do I see my YouTube Music listening history and stats?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "You can see your YouTube Music stats by exporting your data from Google Takeout (takeout.google.com), selecting 'YouTube and YouTube Music', then uploading the watch-history.json file to YTMusic Stats. You'll get detailed analytics including top artists, most played songs, listening time, and patterns.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Is there a YouTube Music Wrapped like Spotify Wrapped?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "While YouTube Music has its own Recap feature, YTMusic Stats provides a more detailed and always-available Wrapped experience. Unlike YouTube's annual Recap, you can generate your music wrapped anytime with comprehensive stats, top artists, listening patterns, and shareable insights.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "How do I download my YouTube Music data from Google Takeout?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Go to takeout.google.com, sign in with your Google account, click 'Deselect all', then select only 'YouTube and YouTube Music'. Choose JSON format, click 'Create export', and wait for the download link. Extract the zip file and find the watch-history.json file to upload to YTMusic Stats.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Is YTMusic Stats free and safe to use?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Yes, YTMusic Stats is completely free and open source. Your data is processed securely and we don't sell or share your information. The entire source code is available on GitHub for transparency. No tracking, no ads, and your privacy is our priority.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "What insights can I get from my YouTube Music history?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "YTMusic Stats provides comprehensive insights including: total listening time, number of unique songs and artists, your top 10 most played artists and songs, listening patterns by time of day and day of week, song age analysis, average song length, music variety percentage, and a personalized Music Wrapped experience.",
+        },
+      },
+    ],
+  };
+
   return (
     <motion.div initial="hidden" animate="visible" variants={containerVariants}>
+      <Script
+        id="faq-schema"
+        type="application/ld+json"
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: officially recommended
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
       {/* Hero Section */}
       <motion.div
         className="h-screen w-screen relative"
@@ -85,13 +144,13 @@ export function HomeContent() {
           variants={itemVariants}
         >
           <div className="max-w-3xl mx-auto space-y-6">
-            <motion.h2
+            <motion.h1
               className="text-4xl md:text-6xl font-bold tracking-tight"
               variants={itemVariants}
             >
               Analyze Your
               <span className="text-primary"> YouTube Music</span> History
-            </motion.h2>
+            </motion.h1>
             <motion.p
               className="text-xl text-muted-foreground"
               variants={itemVariants}
@@ -125,7 +184,7 @@ export function HomeContent() {
         viewport={{ once: true, margin: "-100px" }}
       >
         <motion.div className="text-center mb-12" variants={itemVariants}>
-          <h3 className="text-3xl font-bold mb-4">Your Music Analytics</h3>
+          <h2 className="text-3xl font-bold mb-4">Your Music Analytics</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Transform your Google Takeout YouTube Music data into meaningful
             insights about your listening habits and musical preferences.
@@ -208,7 +267,7 @@ export function HomeContent() {
         viewport={{ once: true, margin: "-100px" }}
       >
         <motion.div className="text-center mb-16" variants={itemVariants}>
-          <h3 className="text-3xl font-bold mb-4">How It Works</h3>
+          <h2 className="text-3xl font-bold mb-4">How It Works</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
             Transform your YouTube Music data into meaningful insights in just a
             few simple steps
@@ -230,9 +289,9 @@ export function HomeContent() {
                   <span className="text-sm font-medium text-primary">
                     Step 1
                   </span>
-                  <h4 className="text-2xl font-bold">
+                  <h3 className="text-2xl font-bold">
                     Get Your Data from Google
-                  </h4>
+                  </h3>
                 </div>
               </div>
               <div className="space-y-4">
@@ -316,9 +375,9 @@ export function HomeContent() {
                   <span className="text-sm font-medium text-primary">
                     Step 2
                   </span>
-                  <h4 className="text-2xl font-bold">
+                  <h3 className="text-2xl font-bold">
                     Upload & Process Your Data
-                  </h4>
+                  </h3>
                 </div>
               </div>
               <div className="space-y-4">
@@ -374,9 +433,9 @@ export function HomeContent() {
                   <span className="text-sm font-medium text-primary">
                     Step 3
                   </span>
-                  <h4 className="text-2xl font-bold">
+                  <h3 className="text-2xl font-bold">
                     Explore Your Music Insights
-                  </h4>
+                  </h3>
                 </div>
               </div>
               <div className="space-y-4">
@@ -441,9 +500,9 @@ export function HomeContent() {
       >
         <div className="max-w-4xl mx-auto">
           <motion.div className="text-center mb-12" variants={itemVariants}>
-            <h3 className="text-3xl font-bold mb-4">
+            <h2 className="text-3xl font-bold mb-4">
               Open Source & Privacy First
-            </h3>
+            </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               Built by an indie developer with complete transparency. Your data
               stays private, and the code is open for everyone to review and
@@ -458,7 +517,7 @@ export function HomeContent() {
                   <div className="h-12 w-12 mx-auto mb-4 rounded-full bg-green-100 dark:bg-gray-300/20 flex items-center justify-center">
                     <Code className="h-6 w-6 " />
                   </div>
-                  <h4 className="font-semibold mb-2">100% Open Source</h4>
+                  <h3 className="font-semibold mb-2">100% Open Source</h3>
                   <p className="text-sm text-muted-foreground">
                     Every line of code is public on GitHub. Review the source,
                     contribute improvements, or run your own instance.
@@ -487,9 +546,9 @@ export function HomeContent() {
                       />
                     </svg>
                   </div>
-                  <h4 className="font-semibold mb-2">
+                  <h3 className="font-semibold mb-2">
                     Your Data, Your Control
-                  </h4>
+                  </h3>
                   <p className="text-sm text-muted-foreground">
                     No tracking, no ads, no data selling. As an indie project,
                     your privacy is the priority, not profit from your data.
@@ -504,7 +563,7 @@ export function HomeContent() {
                   <div className="h-12 w-12 mx-auto mb-4 rounded-full bg-purple-100 dark:bg-gray-300/20 flex items-center justify-center">
                     <Heart className="h-6 w-6" />
                   </div>
-                  <h4 className="font-semibold mb-2">Built with Passion</h4>
+                  <h3 className="font-semibold mb-2">Built with Passion</h3>
                   <p className="text-sm text-muted-foreground">
                     Created by a music lover for music lovers. No corporate
                     agenda, just a simple tool to explore your musical journey.
@@ -520,7 +579,7 @@ export function HomeContent() {
           >
             <div className="text-center space-y-4">
               <div className="flex items-center justify-center space-x-2">
-                <Github className="h-5 w-5 text-muted-foreground" />
+                <IconBrandGithub className="h-5 w-5 text-muted-foreground" />
                 <span className="font-medium">Transparency Matters</span>
               </div>
               <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
@@ -536,7 +595,7 @@ export function HomeContent() {
                   rel="noopener noreferrer"
                   className="inline-flex items-center"
                 >
-                  <Github className="h-4 w-4 mr-2" />
+                  <IconBrandGithub className="h-4 w-4 mr-2" />
                   View Source Code
                 </Link>
               </Button>
@@ -633,7 +692,7 @@ export function HomeContent() {
                     rel="noopener noreferrer"
                     className="text-muted-foreground hover:text-primary transition-colors flex items-center"
                   >
-                    <Github className="h-3 w-3 mr-1" />
+                    <IconBrandGithub className="h-3 w-3 mr-1" />
                     Source Code
                   </Link>
                 </li>
@@ -644,7 +703,7 @@ export function HomeContent() {
           {/* Bottom Section */}
           <div className="border-t mt-8 pt-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-              <span>© 2025 YTMusic Stats</span>
+              <span>© {new Date().getFullYear()} YTMusic Stats</span>
               <span>•</span>
               <span>Open Source</span>
               <span>•</span>
@@ -659,7 +718,7 @@ export function HomeContent() {
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-primary transition-colors"
               >
-                <Github className="h-5 w-5" />
+                <IconBrandGithub className="h-5 w-5" />
               </Link>
               <Link
                 href="https://twitter.com/DESTROYER__V"
@@ -667,7 +726,7 @@ export function HomeContent() {
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-primary transition-colors"
               >
-                <Twitter className="h-5 w-5" />
+                <IconBrandTwitter className="h-5 w-5" />
               </Link>
               <Link
                 href="https://linkedin.com/in/vaaibhavmishra"
@@ -675,7 +734,7 @@ export function HomeContent() {
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-primary transition-colors"
               >
-                <Linkedin className="h-5 w-5" />
+                <IconBrandLinkedin className="h-5 w-5" />
               </Link>
             </div>
           </div>

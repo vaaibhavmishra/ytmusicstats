@@ -1,13 +1,13 @@
-import { betterAuth } from "better-auth";
-import { mongodbAdapter } from "better-auth/adapters/mongodb";
-import { MongoClient } from "mongodb";
-
-const client = new MongoClient(process.env.MONGODB_URI as string);
-
-const db = client.db("ytmusic-stats");
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { betterAuth } from "better-auth/minimal";
+import { db } from "@/lib/db";
+import * as schema from "@/lib/db/schema";
 
 export const auth = betterAuth({
-  database: mongodbAdapter(db),
+  database: drizzleAdapter(db, {
+    provider: "pg",
+    schema,
+  }),
   emailAndPassword: {
     enabled: true,
   },
@@ -18,6 +18,6 @@ export const auth = betterAuth({
     },
   },
   advanced: {
-    useSecureCookies: true,
+    useSecureCookies: process.env.NODE_ENV === "production",
   },
 });

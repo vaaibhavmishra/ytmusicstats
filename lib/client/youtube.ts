@@ -4,143 +4,98 @@
  */
 
 import { lookupSongs } from "@/app/actions/songs";
-import type {
-  FetchProgress,
-  ISong,
-  ParsedSongInfo,
-} from "@/lib/types/database";
+import { mapWithConcurrency } from "@/lib/concurrency";
+import type { FetchProgress, ISong } from "@/lib/types/database";
 
-// Batch size for client-side processing to show incremental progress
+// Batch size for client-side processing. Each batch is one server-action
+// round-trip (auth + DB connect + origin check happen once per call), so larger
+// batches cut fixed per-call overhead. The server chunks internally by 50 for
+// the YouTube API, so this only affects round-trip count and progress
+// granularity — kept at 200 to balance per-call overhead against finer-grained
+// progress updates.
 const CLIENT_BATCH_SIZE = 200;
 
-// Re-export FetchProgress for convenience
-export type { FetchProgress } from "@/lib/types/database";
+// Number of lookup batches to run concurrently. Kept at 3 to stay clear of
+// YouTube API rate limits while still cutting wall-clock time versus sequential
+// fetching.
+const LOOKUP_CONCURRENCY = 3;
 
 /**
- * Fetch metadata for a batch of entries using server action
- * Processes in batches to show incremental progress
+ * Fetch metadata for a list of unique video IDs using the server action.
+ * The de-dup is done upstream in the parse layer (see `ParseResult.uniqueVideoIds`).
+ * Processes in batches to show incremental progress.
  */
 export async function fetchSongMetadata(
-  entries: ParsedSongInfo[],
+  videoIds: string[],
   onProgress?: (progress: FetchProgress) => void,
 ): Promise<Map<string, ISong>> {
-  // Extract unique video IDs
-  const videoIds: string[] = [];
-
-  for (const entry of entries) {
-    if (entry.youtubeId && !videoIds.includes(entry.youtubeId)) {
-      videoIds.push(entry.youtubeId);
-    }
-  }
-
   const metadata = new Map<string, ISong>();
 
   if (videoIds.length === 0) {
     return metadata;
   }
 
-  const totalBatches = Math.ceil(videoIds.length / CLIENT_BATCH_SIZE);
+  // Split the unique IDs into batches up front so they can be fetched with
+  // bounded concurrency.
+  const batches: string[][] = [];
+  for (let i = 0; i < videoIds.length; i += CLIENT_BATCH_SIZE) {
+    batches.push(videoIds.slice(i, i + CLIENT_BATCH_SIZE));
+  }
+  const totalBatches = batches.length;
+
   let totalCached = 0;
   let totalFetched = 0;
   let processed = 0;
+  let completedBatches = 0;
 
   // Initial progress report
-  if (onProgress) {
-    onProgress({
-      total: videoIds.length,
-      processed: 0,
-      fetched: 0,
-      cached: 0,
-      currentBatch: 0,
-      totalBatches,
-    });
-  }
+  onProgress?.({
+    total: videoIds.length,
+    processed: 0,
+    fetched: 0,
+    cached: 0,
+    currentBatch: 0,
+    totalBatches,
+  });
 
-  // Process in batches to show incremental progress
-  for (let i = 0; i < videoIds.length; i += CLIENT_BATCH_SIZE) {
-    const batchIds = videoIds.slice(i, i + CLIENT_BATCH_SIZE);
-    const currentBatch = Math.floor(i / CLIENT_BATCH_SIZE) + 1;
+  // Fetch batches concurrently (bounded). Shared counters are mutated inside the
+  // callback — safe because JS runs each continuation to completion without
+  // interleaving. `currentBatch` now reports batches *completed*.
+  await mapWithConcurrency(
+    batches,
+    LOOKUP_CONCURRENCY,
+    async (batchIds, index) => {
+      try {
+        const result = await lookupSongs(batchIds);
 
-    try {
-      const result = await lookupSongs(batchIds);
-
-      if (result.success && result.data) {
-        for (const [id, song] of Object.entries(result.data)) {
-          metadata.set(id, song);
+        if (result.success && result.data) {
+          for (const [id, song] of Object.entries(result.data)) {
+            metadata.set(id, song);
+          }
         }
 
-        // Debug: Log a sample of the metadata to verify thumbnails are present
-        if (currentBatch === 1) {
-          const sampleSongs = Object.values(result.data).slice(0, 3);
-          console.log(
-            "Sample metadata from lookupSongs:",
-            sampleSongs.map((s) => ({
-              title: s.title,
-              thumbnail: s.thumbnail,
-              artistImage: s.artistImage,
-            })),
-          );
+        // Update totals from this batch
+        if (result.stats) {
+          totalCached += result.stats.cached;
+          totalFetched += result.stats.fetched;
         }
-      }
-
-      // Update totals from this batch
-      if (result.stats) {
-        totalCached += result.stats.cached;
-        totalFetched += result.stats.fetched;
-      }
-
-      processed += batchIds.length;
-
-      // Report progress after each batch
-      if (onProgress) {
-        onProgress({
+      } catch (error) {
+        console.error(`Error fetching batch ${index + 1}:`, error);
+        // Continue with remaining batches instead of failing entirely
+      } finally {
+        processed += batchIds.length;
+        completedBatches++;
+        onProgress?.({
           total: videoIds.length,
           processed,
           fetched: totalFetched,
           cached: totalCached,
-          currentBatch,
+          currentBatch: completedBatches,
           totalBatches,
         });
       }
-    } catch (error) {
-      console.error(`Error fetching batch ${currentBatch}:`, error);
-      // Continue with next batch instead of failing entirely
-      processed += batchIds.length;
-    }
-  }
+    },
+  );
 
   return metadata;
-}
-
-/**
- * Get video ID from a parsed entry
- */
-export function getVideoIdFromEntry(entry: ParsedSongInfo): string | null {
-  return entry.youtubeId || null;
-}
-
-/**
- * Enrich entries with real metadata (duration, cleaned artist name)
- */
-export function enrichEntriesWithMetadata(
-  entries: ParsedSongInfo[],
-  metadata: Map<string, ISong>,
-): ParsedSongInfo[] {
-  return entries.map((entry) => {
-    const videoId = getVideoIdFromEntry(entry);
-
-    if (!videoId) return entry;
-
-    const songData = metadata.get(videoId);
-
-    if (!songData) return entry;
-
-    return {
-      ...entry,
-      // Use real duration from YouTube API
-      estimatedDuration: songData.duration,
-      // Use cleaned artist name (not "Release" or other generic names)
-      artist: songData.artist,
-    };
-  });
 }

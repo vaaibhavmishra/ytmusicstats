@@ -1,8 +1,13 @@
 "use client";
 
-import { useState, Suspense } from "react";
-import { signUp } from "@/lib/auth/client";
+import { Separator } from "@radix-ui/react-separator";
+import { IconBrandGoogleFilled } from "@tabler/icons-react";
+import { LoaderCircle, Music } from "lucide-react";
+import { motion, type Variants } from "motion/react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,11 +18,8 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LoaderCircle, Music, ArrowLeft } from "lucide-react";
-import Link from "next/link";
-import { toast } from "sonner";
 import { PageLoading } from "@/components/ui/loading";
-import { motion, type Variants } from "motion/react";
+import { signIn, signUp } from "@/lib/auth/client";
 
 const containerVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
@@ -53,6 +55,19 @@ function SignUpForm() {
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirectTo") || "/dashboard";
 
+  const handleGoogleSignIn = async () => {
+    try {
+      await signIn.social({
+        provider: "google",
+        callbackURL: redirectTo,
+      });
+    } catch (_error) {
+      toast.error("Google sign in failed", {
+        description: "Please try again later.",
+      });
+    }
+  };
+
   const handleEmailSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -73,7 +88,7 @@ function SignUpForm() {
     setIsLoading(true);
 
     try {
-      const { data, error } = await signUp.email({
+      const { error } = await signUp.email({
         email,
         password,
         name,
@@ -89,7 +104,7 @@ function SignUpForm() {
         });
         router.push(redirectTo);
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("An error occurred", {
         description: "Please try again later.",
       });
@@ -109,7 +124,7 @@ function SignUpForm() {
         <Card className="w-full">
           <motion.div variants={itemVariants}>
             <CardHeader className="text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-red-500 to-red-700 rounded-full mb-4 mx-auto">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-linear-to-r from-red-500 to-red-700 rounded-full mb-4 mx-auto">
                 <Music className="h-6 w-6 text-white" />
               </div>
               <CardTitle className="text-2xl">Create Account</CardTitle>
@@ -120,6 +135,26 @@ function SignUpForm() {
           </motion.div>
           <motion.div variants={itemVariants}>
             <CardContent className="space-y-4">
+              <Button
+                onClick={handleGoogleSignIn}
+                variant="outline"
+                className="w-full"
+                type="button"
+              >
+                <IconBrandGoogleFilled />
+                Continue with Google
+              </Button>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <Separator className="w-full" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    Or continue with
+                  </span>
+                </div>
+              </div>
               <form onSubmit={handleEmailSignUp} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Full Name</Label>

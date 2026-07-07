@@ -1,7 +1,21 @@
+import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { UploadContent } from "@/app/upload/components/UploadContent";
 import { auth } from "@/lib/auth/config";
+
+export const metadata: Metadata = {
+  title: "Upload Your Music Data",
+  description:
+    "Upload your Google Takeout watch-history.json file to analyze your YouTube Music listening history. Get detailed insights about your music preferences.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+  alternates: {
+    canonical: "/upload",
+  },
+};
 
 export default async function UploadPage() {
   const session = await auth.api.getSession({
