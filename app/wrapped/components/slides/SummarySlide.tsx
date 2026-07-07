@@ -420,7 +420,7 @@ export function SummarySlide({ stats, userName }: SummarySlideProps) {
               transition={{ delay: 0.9 }}
             >
               <p className="text-[10px] text-white/30 font-medium">
-                ytmusic-stats.vercel.app
+                ytmusicstats.shipby.me
               </p>
             </motion.div>
           </div>

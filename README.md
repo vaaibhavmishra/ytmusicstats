@@ -71,16 +71,22 @@ A comprehensive web application that analyzes your YouTube Music listening histo
    Create a `.env.local` file in the root directory:
 
    ```env
-   # Database
-   MONGODB_URI=mongodb://localhost:27017/ytmusic-stats
-   
-   # Authentication
-   BETTER_AUTH_SECRET=your-secret-key-here
-   BETTER_AUTH_URL=http://localhost:3000
-   
-   # Google OAuth (optional)
-   GOOGLE_CLIENT_ID=your-google-client-id
-   GOOGLE_CLIENT_SECRET=your-google-client-secret
+   # Production DB
+   DATABASE_URL=
+
+   # Better Auth Configuration
+   BETTER_AUTH_SECRET=
+   BETTER_AUTH_URL=
+
+
+   # Google OAuth (for BetterAuth)
+   GOOGLE_CLIENT_ID=
+   GOOGLE_CLIENT_SECRET=
+
+   # YouTube API (for song duration lookup)
+   YOUTUBE_API_KEY=
+
+   NEXT_PUBLIC_APP_URL=
    ```
 
 4. **Start the development server**
