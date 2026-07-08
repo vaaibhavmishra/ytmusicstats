@@ -1,19 +1,26 @@
 /**
- * Parsing Web Worker.
+ * Parsing Web Worker — with byte-level pre-filtering.
  *
  * Receives a transferred byte slice of the file (one shard of the top-level
- * JSON array, spanning whole elements), decodes it, parses it, and runs the
- * shared filter/transform over it. Posts incremental progress and a final
- * result back to the pool.
+ * JSON array), **plus per-element byte ranges**. For each element, it first
+ * checks the raw bytes for the ASCII sequence `"YouTube Music"` — if the
+ * sequence is absent, the entry cannot be a YouTube Music entry and is skipped
+ * entirely, avoiding the expensive JSON.parse → object-build → filter cycle.
+ *
+ * Only elements that pass the byte pre-filter are decoded, parsed, and run
+ * through the shared transform pipeline. This typically eliminates 50%+ of
+ * JSON.parse calls (regular YouTube watches, ads, etc.).
  *
  * IMPORTANT: this file references the worker global (`self`) and must never be
  * statically `import`ed by other modules — it is only referenced via
  * `new Worker(new URL("./parser.worker.ts", import.meta.url))` in
- * `worker-pool.ts`. It imports ONLY the pure transforms + type-only message
- * shapes, so no DOM/server code is pulled into the worker bundle.
+ * `worker-pool.ts`. It imports ONLY the pure transforms + scanner helpers +
+ * type-only message shapes, so no DOM/server code is pulled into the worker
+ * bundle.
  */
 
-import { parseEntries } from "@/lib/parsing/transforms";
+import { asciiToBytes, containsASCIISequence } from "@/lib/parsing/scanner";
+import { isYouTubeMusicEntry, parseSongEntry } from "@/lib/parsing/transforms";
 import type { GoogleTakeoutEntry, ParsedSongInfo } from "@/lib/types/database";
 import type { ShardRequest, WorkerMessage } from "./worker-pool";
 
@@ -24,44 +31,81 @@ const ctx = self as unknown as {
   postMessage: (message: WorkerMessage) => void;
 };
 
-// Process the decoded array in chunks so we can post progress without the
-// JSON.parse'd array sitting idle. No UI thread here, so no yielding needed.
-const PROGRESS_CHUNK = 10_000;
+// Pre-compute the needle once at worker init. "YouTube Music" is pure ASCII,
+// so the UTF-8/ASCII safety guarantee from scanner.ts applies.
+const YTM_NEEDLE = asciiToBytes("YouTube Music");
+
+// Report progress every N elements to avoid excessive postMessage overhead.
+const PROGRESS_INTERVAL = 5_000;
 
 ctx.onmessage = (event: MessageEvent<ShardRequest>) => {
-  const { shardIndex, buffer } = event.data;
+  const { shardIndex, buffer, elementRanges } = event.data;
 
   try {
-    const text = new TextDecoder().decode(new Uint8Array(buffer));
-    // The shard spans whole elements separated by their original commas, so
-    // wrapping in brackets reconstitutes a valid JSON array.
-    const raw = JSON.parse(`[${text}]`) as GoogleTakeoutEntry[];
+    const bytes = new Uint8Array(buffer);
+    const decoder = new TextDecoder();
+    const elementCount = elementRanges.length / 2;
 
     const entries: ParsedSongInfo[] = [];
     let musicEntries = 0;
 
-    // Collect this shard's unique video IDs in the same loop that builds
-    // `entries` — saves the main thread a separate de-dup pass later.
     const seenIds = new Set<string>();
     const uniqueIds: string[] = [];
 
-    for (let i = 0; i < raw.length; i += PROGRESS_CHUNK) {
-      const chunk = raw.slice(i, i + PROGRESS_CHUNK);
-      const parsed = parseEntries(chunk);
-      for (const entry of parsed.entries) {
-        entries.push(entry);
-        if (entry.youtubeId && !seenIds.has(entry.youtubeId)) {
-          seenIds.add(entry.youtubeId);
-          uniqueIds.push(entry.youtubeId);
+    for (let e = 0; e < elementCount; e++) {
+      const elemStart = elementRanges[e * 2];
+      const elemEnd = elementRanges[e * 2 + 1];
+
+      // ── Byte-level pre-filter ──────────────────────────────────────────
+      // If the raw bytes of this element don't contain "YouTube Music",
+      // it can't possibly pass isYouTubeMusicEntry — skip JSON.parse entirely.
+      if (!containsASCIISequence(bytes, elemStart, elemEnd, YTM_NEEDLE)) {
+        // Report progress periodically even for skipped entries.
+        if ((e + 1) % PROGRESS_INTERVAL === 0) {
+          ctx.postMessage({
+            type: "progress",
+            shardIndex,
+            processed: e + 1,
+          });
+        }
+        continue;
+      }
+
+      // ── Parse only likely-music entries ─────────────────────────────────
+      const text = decoder.decode(bytes.subarray(elemStart, elemEnd));
+      const entry = JSON.parse(text) as GoogleTakeoutEntry;
+
+      if (!isYouTubeMusicEntry(entry)) {
+        // False positive from byte pre-filter (e.g. song title contained
+        // "YouTube Music"). Rare, but handled correctly.
+        if ((e + 1) % PROGRESS_INTERVAL === 0) {
+          ctx.postMessage({
+            type: "progress",
+            shardIndex,
+            processed: e + 1,
+          });
+        }
+        continue;
+      }
+
+      musicEntries++;
+      const parsed = parseSongEntry(entry);
+      if (parsed) {
+        entries.push(parsed);
+        if (parsed.youtubeId && !seenIds.has(parsed.youtubeId)) {
+          seenIds.add(parsed.youtubeId);
+          uniqueIds.push(parsed.youtubeId);
         }
       }
-      musicEntries += parsed.musicEntries;
 
-      ctx.postMessage({
-        type: "progress",
-        shardIndex,
-        processed: Math.min(i + PROGRESS_CHUNK, raw.length),
-      });
+      // Report progress periodically.
+      if ((e + 1) % PROGRESS_INTERVAL === 0) {
+        ctx.postMessage({
+          type: "progress",
+          shardIndex,
+          processed: e + 1,
+        });
+      }
     }
 
     ctx.postMessage({
@@ -70,7 +114,7 @@ ctx.onmessage = (event: MessageEvent<ShardRequest>) => {
       entries,
       uniqueIds,
       musicEntries,
-      totalEntries: raw.length,
+      totalEntries: elementCount,
     });
   } catch (error) {
     ctx.postMessage({

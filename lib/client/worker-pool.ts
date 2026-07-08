@@ -38,10 +38,18 @@ export type ScanWorkerMessage =
   | { ok: true; ranges: Uint32Array; buffer: ArrayBuffer }
   | { ok: false; reason: string };
 
-/** Message sent to a worker: a transferred slice of the file's bytes. */
+/**
+ * Message sent to a worker: a transferred byte slice plus per-element byte
+ * ranges so the worker can pre-filter at the byte level before JSON.parse.
+ */
 export interface ShardRequest {
   shardIndex: number;
   buffer: ArrayBuffer;
+  /**
+   * Flat array of [start, end) byte offsets *relative to `buffer`*, two
+   * entries per element: elementRanges[2k] = start, elementRanges[2k+1] = end.
+   */
+  elementRanges: Uint32Array;
 }
 
 /** Messages a worker can send back. */
@@ -278,6 +286,16 @@ export async function parseWithWorkerPool(
           fail(new WorkerPoolFallback("worker message deserialization error"));
         };
 
+        // Build per-element byte ranges relative to the shard start so the
+        // worker can pre-filter entries at the byte level.
+        const elemCount = lastElem - firstElem + 1;
+        const elementRanges = new Uint32Array(elemCount * 2);
+        for (let e = 0; e < elemCount; e++) {
+          elementRanges[e * 2] = ranges[(firstElem + e) * 2] - spanStart;
+          elementRanges[e * 2 + 1] =
+            ranges[(firstElem + e) * 2 + 1] - spanStart;
+        }
+
         // Copy this shard's bytes into a fresh buffer and transfer it (zero-copy
         // handoff). `bytes` is non-null here (set above and only cleared after
         // this loop). Build + transfer one shard at a time so each slice leaves
@@ -286,8 +304,9 @@ export async function parseWithWorkerPool(
         const request: ShardRequest = {
           shardIndex,
           buffer: slice.buffer as ArrayBuffer,
+          elementRanges,
         };
-        worker.postMessage(request, [request.buffer]);
+        worker.postMessage(request, [request.buffer, elementRanges.buffer]);
       }
 
       // The original full buffer is no longer needed; drop the reference so it

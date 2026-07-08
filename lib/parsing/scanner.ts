@@ -150,3 +150,46 @@ export function scanTopLevelElements(bytes: Uint8Array): ScanResult {
 
   return { ok: true, ranges: Uint32Array.from(ranges) };
 }
+
+// ─── Byte-level pre-filter helpers ───────────────────────────────────────────
+
+/**
+ * Convert an ASCII-only string to a Uint8Array of its byte values.
+ * Only valid for strings where every character is < 128.
+ */
+export function asciiToBytes(s: string): Uint8Array {
+  const out = new Uint8Array(s.length);
+  for (let i = 0; i < s.length; i++) out[i] = s.charCodeAt(i);
+  return out;
+}
+
+/**
+ * Check whether a byte sub-sequence exists inside a Uint8Array region.
+ *
+ * Uses a simple linear scan — for the short needles we're matching
+ * (`"YouTube Music"`, 13 bytes) against element spans of a few hundred bytes,
+ * a naive search is faster than Boyer-Moore due to branch-predictor friendliness
+ * and zero setup cost.
+ *
+ * Safety: the same UTF-8/ASCII argument from `scanTopLevelElements` applies —
+ * all needle bytes are < 0x80, so they can never appear as part of a multi-byte
+ * character.
+ */
+export function containsASCIISequence(
+  haystack: Uint8Array,
+  start: number,
+  end: number,
+  needle: Uint8Array,
+): boolean {
+  const needleLen = needle.length;
+  const limit = end - needleLen;
+
+  outer: for (let i = start; i <= limit; i++) {
+    if (haystack[i] !== needle[0]) continue;
+    for (let j = 1; j < needleLen; j++) {
+      if (haystack[i + j] !== needle[j]) continue outer;
+    }
+    return true;
+  }
+  return false;
+}
