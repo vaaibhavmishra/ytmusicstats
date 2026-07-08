@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth/config";
 
 export const metadata: Metadata = {
   title: "Sign In",
@@ -18,10 +21,19 @@ export const metadata: Metadata = {
   },
 };
 
-export default function SignInLayout({
+export default async function SignInLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  // If user is authenticated, redirect to dashboard
+  if (session?.user) {
+    redirect("/dashboard");
+  }
+
   return children;
 }

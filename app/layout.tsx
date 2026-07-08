@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { DevBanner } from "@/components/DevBanner";
 import { Navigation } from "@/components/Navigation";
 import Providers from "@/components/providers";
 
@@ -140,6 +141,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <Providers>
+          <DevBanner />
           <div className="min-h-screen bg-black relative w-full">
             {/* Header - Floating above content */}
             <div className="absolute top-0 left-0 right-0 z-50 pointer-events-none">
