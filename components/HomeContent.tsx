@@ -148,16 +148,19 @@ export function HomeContent() {
               className="text-4xl md:text-6xl font-bold tracking-tight"
               variants={itemVariants}
             >
-              Analyze Your
-              <span className="text-primary"> YouTube Music</span> History
+              <span className="text-primary">YouTube Music Stats</span>
+              <span className="block text-2xl md:text-4xl mt-2 font-semibold text-foreground">
+                Analyze Your Listening History
+              </span>
             </motion.h1>
             <motion.p
               className="text-xl text-muted-foreground"
               variants={itemVariants}
             >
-              Transform your Google Takeout data into personalized music
-              insights. Discover your top artists, most played songs, and
-              listening statistics from your YouTube Music history.
+              YouTube Music Stats turns your Google Takeout data into
+              personalized music insights. Discover your top artists, most
+              played songs, and detailed listening statistics from your YouTube
+              Music history — free and open source.
             </motion.p>
             <motion.div
               className="flex flex-col sm:flex-row gap-4 justify-center"
@@ -184,7 +187,9 @@ export function HomeContent() {
         viewport={{ once: true, margin: "-100px" }}
       >
         <motion.div className="text-center mb-12" variants={itemVariants}>
-          <h2 className="text-3xl font-bold mb-4">Your Music Analytics</h2>
+          <h2 className="text-3xl font-bold mb-4">
+            Your YouTube Music Stats & Analytics
+          </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Transform your Google Takeout YouTube Music data into meaningful
             insights about your listening habits and musical preferences.

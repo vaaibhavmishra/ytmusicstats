@@ -23,15 +23,21 @@ const siteUrl =
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "YTMusic Stats - Analyze Your YouTube Music Listening History",
+    default:
+      "YouTube Music Stats - Analyze Your Listening History | YTMusic Stats",
     template: "%s | YTMusic Stats",
   },
   description:
-    "Transform your Google Takeout data into personalized music insights. Discover your top artists, most played songs, listening patterns, and detailed statistics from your YouTube Music history. Free, open-source, and privacy-focused.",
+    "YouTube Music Stats turns your Google Takeout data into personalized music insights. See your top artists, most played songs, listening patterns, and detailed statistics from your YouTube Music history. Free, open-source, and privacy-focused.",
   keywords: [
-    "YouTube Music",
     "YouTube Music stats",
+    "yt music stats",
+    "ytmusicstats",
+    "ytmusic stats",
     "YouTube Music statistics",
+    "YouTube Music",
+    "YouTube Music wrapped",
+    "YouTube Music recap",
     "music analytics",
     "listening history",
     "Google Takeout",
@@ -65,9 +71,10 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: siteUrl,
     siteName: "YTMusic Stats",
-    title: "YTMusic Stats - Analyze Your YouTube Music Listening History",
+    title:
+      "YouTube Music Stats - Analyze Your Listening History | YTMusic Stats",
     description:
-      "Transform your Google Takeout data into personalized music insights. Discover your top artists, most played songs, and listening patterns.",
+      "YouTube Music Stats turns your Google Takeout data into personalized music insights. Discover your top artists, most played songs, and listening patterns.",
     images: [
       {
         url: "/og-image.png",
@@ -79,9 +86,10 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "YTMusic Stats - Analyze Your YouTube Music Listening History",
+    title:
+      "YouTube Music Stats - Analyze Your Listening History | YTMusic Stats",
     description:
-      "Transform your Google Takeout data into personalized music insights. Discover your top artists and most played songs.",
+      "YouTube Music Stats turns your Google Takeout data into personalized music insights. Discover your top artists and most played songs.",
     images: ["/og-image.png"],
     creator: "@DESTROYER__V",
   },
@@ -107,6 +115,7 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
   name: "YTMusic Stats",
+  alternateName: ["YouTube Music Stats", "YT Music Stats", "ytmusicstats"],
   description:
     "Transform your Google Takeout data into personalized music insights. Discover your top artists, most played songs, and listening patterns from your YouTube Music history.",
   url: siteUrl,
