@@ -15,7 +15,7 @@
 
 1. Sign up at [polar.sh](https://polar.sh) and create an organization.
 2. Go to **Products** → **Create Product**:
-   - Name: `YTMusic Stats Pro`
+   - Name: `YT Music Stats Pro`
    - Type: **One-time payment**
    - Price: `$4.99`
    - Copy the **Product ID** (e.g., `prod_...`).

@@ -21,9 +21,9 @@ import { auth } from "@/lib/auth/config";
 import { PricingContent } from "./components/PricingContent";
 
 export const metadata: Metadata = {
-  title: "Pricing — YTMusic Stats",
+  title: "Pricing — YT Music Stats",
   description:
-    "Unlock unlimited music analytics with YTMusic Stats Pro. One-time payment, lifetime access.",
+    "Unlock unlimited music analytics with YT Music Stats Pro. One-time payment, lifetime access.",
   alternates: {
     canonical: "/pricing",
   },

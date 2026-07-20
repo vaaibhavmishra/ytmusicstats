@@ -2,10 +2,10 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "YTMusic Stats - YouTube Music Analytics",
-    short_name: "YTMusic Stats",
+    name: "YT Music Stats – YouTube Music Stats & Listening History Analyzer",
+    short_name: "YT Music Stats",
     description:
-      "Transform your Google Takeout data into personalized music insights. Discover your top artists, most played songs, and listening patterns.",
+      "Free YouTube Music stats tracker. Upload your Google Takeout data to see top artists, most played songs, listening time, and personalized YT Music stats.",
     start_url: "/",
     display: "standalone",
     background_color: "#000000",

@@ -72,7 +72,7 @@ export function DashboardContent({ stats }: DashboardContentProps) {
                 <Music className="h-8 w-8 text-foreground" />
               </div>
               <CardTitle className="text-2xl">
-                Welcome to YTMusic Stats! 🎵
+                Welcome to YT Music Stats! 🎵
               </CardTitle>
               <CardDescription className="text-base">
                 Transform your Google Takeout data into beautiful music

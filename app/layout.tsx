@@ -23,32 +23,40 @@ const siteUrl =
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "YTMusic Stats - Analyze Your YouTube Music Listening History",
-    template: "%s | YTMusic Stats",
+    default:
+      "YT Music Stats – YouTube Music Stats & Listening History Analyzer",
+    template: "%s | YT Music Stats",
   },
   description:
-    "Transform your Google Takeout data into personalized music insights. Discover your top artists, most played songs, listening patterns, and detailed statistics from your YouTube Music history. Free, open-source, and privacy-focused.",
+    "YT Music Stats is the #1 free YouTube Music stats tracker. Upload your Google Takeout data to see your top artists, most played songs, listening time, and personalized YT Music stats. Open-source & privacy-first.",
   keywords: [
-    "YouTube Music",
-    "YouTube Music stats",
+    "ytmusicstats",
+    "yt music stats",
+    "youtube music stats",
     "YouTube Music statistics",
-    "music analytics",
-    "listening history",
-    "Google Takeout",
-    "music insights",
-    "top artists",
-    "most played songs",
-    "music wrapped",
-    "listening patterns",
-    "music tracker",
+    "YouTube Music listening history",
+    "YouTube Music wrapped",
     "YouTube Music analyzer",
+    "YouTube Music tracker",
+    "yt music wrapped",
+    "yt music listening history",
+    "yt music analytics",
+    "Google Takeout YouTube Music",
+    "music analytics",
+    "top artists YouTube Music",
+    "most played songs YouTube Music",
+    "YouTube Music data",
+    "music insights",
+    "listening patterns",
     "music data visualization",
+    "YouTube Music recap",
+    "free music stats",
   ],
   authors: [
     { name: "Vaibhav Mishra", url: "https://github.com/vaaibhavmishra" },
   ],
   creator: "Vaibhav Mishra",
-  publisher: "YTMusic Stats",
+  publisher: "YT Music Stats",
   robots: {
     index: true,
     follow: true,
@@ -64,24 +72,26 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: siteUrl,
-    siteName: "YTMusic Stats",
-    title: "YTMusic Stats - Analyze Your YouTube Music Listening History",
+    siteName: "YT Music Stats",
+    title:
+      "YT Music Stats – Free YouTube Music Stats & Listening History Analyzer",
     description:
-      "Transform your Google Takeout data into personalized music insights. Discover your top artists, most played songs, and listening patterns.",
+      "The #1 free tool to analyze your YouTube Music stats. See your top artists, most played songs, listening time, and personalized insights from your YT Music history.",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "YTMusic Stats - Your YouTube Music Analytics Dashboard",
+        alt: "YT Music Stats – YouTube Music Analytics Dashboard showing top artists, listening time, and music insights",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "YTMusic Stats - Analyze Your YouTube Music Listening History",
+    title:
+      "YT Music Stats – Free YouTube Music Stats & Listening History Analyzer",
     description:
-      "Transform your Google Takeout data into personalized music insights. Discover your top artists and most played songs.",
+      "Analyze your YouTube Music stats for free. See top artists, most played songs, listening time & more from your YT Music history.",
     images: ["/og-image.png"],
     creator: "@DESTROYER__V",
   },
@@ -106,22 +116,52 @@ export const viewport: Viewport = {
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  name: "YTMusic Stats",
+  name: "YT Music Stats",
+  alternateName: [
+    "ytmusicstats",
+    "YT Music Stats",
+    "YouTube Music Stats",
+    "YouTube Music Statistics Analyzer",
+  ],
   description:
-    "Transform your Google Takeout data into personalized music insights. Discover your top artists, most played songs, and listening patterns from your YouTube Music history.",
+    "YT Music Stats is the #1 free tool to analyze your YouTube Music listening history. Upload your Google Takeout data to see top artists, most played songs, listening time, and personalized YT Music stats.",
   url: siteUrl,
   applicationCategory: "MusicApplication",
   operatingSystem: "Web Browser",
+  browserRequirements: "Requires JavaScript. Works on all modern browsers.",
+  softwareVersion: "1.0",
   offers: {
     "@type": "Offer",
     price: "0",
     priceCurrency: "USD",
   },
+  featureList: [
+    "YouTube Music listening history analysis",
+    "Top artists and most played songs ranking",
+    "Total listening time calculation",
+    "Listening patterns by time of day and day of week",
+    "Personalized Music Wrapped experience",
+    "Google Takeout data processing",
+    "Privacy-focused – data processed in-browser",
+    "Open source and free to use",
+  ],
   author: {
     "@type": "Person",
     name: "Vaibhav Mishra",
     url: "https://github.com/vaaibhavmishra",
   },
+  publisher: {
+    "@type": "Organization",
+    name: "YT Music Stats",
+    url: siteUrl,
+  },
+  sameAs: [
+    "https://github.com/vaaibhavmishra/ytmusic-stats",
+    "https://twitter.com/DESTROYER__V",
+    "https://linkedin.com/in/vaaibhavmishra",
+  ],
+  isAccessibleForFree: true,
+  inLanguage: "en",
 };
 
 export default function RootLayout({

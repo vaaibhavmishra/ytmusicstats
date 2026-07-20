@@ -58,6 +58,25 @@ function getBestThumbnail(
   return undefined;
 }
 
+interface YouTubeVideoItem {
+  id: string;
+  contentDetails?: { duration?: string };
+  snippet?: {
+    channelTitle?: string;
+    channelId?: string;
+    title?: string;
+    thumbnails?: Record<string, { url: string }>;
+    publishedAt?: string;
+  };
+}
+
+interface YouTubeChannelItem {
+  id: string;
+  snippet?: {
+    thumbnails?: Record<string, { url: string }>;
+  };
+}
+
 /**
  * Fetch video metadata from YouTube Data API
  */
@@ -103,7 +122,7 @@ async function fetchFromYouTubeAPI(
           return parsed;
         }
 
-        const data = await response.json();
+        const data = (await response.json()) as { items?: YouTubeVideoItem[] };
 
         for (const item of data.items || []) {
           const duration = parseISO8601Duration(
@@ -178,7 +197,9 @@ async function fetchFromYouTubeAPI(
           );
 
           if (channelResponse.ok) {
-            const channelData = await channelResponse.json();
+            const channelData = (await channelResponse.json()) as {
+              items?: YouTubeChannelItem[];
+            };
             for (const channel of channelData.items || []) {
               const artistImage = getBestThumbnail(channel.snippet?.thumbnails);
               if (artistImage) {
@@ -266,11 +287,14 @@ export async function lookupSongs(videoIds: string[]): Promise<LookupResult> {
     const limitedIds = [...new Set(videoIds)].slice(0, MAX_VIDEO_IDS);
 
     // Step 1: Check cache for existing songs (batch to avoid query size limits)
-    const DB_BATCH_SIZE = 500;
+    // D1 has a hard limit of ~100 SQL bind parameters per query.
+    // SELECT uses 1 param per ID; INSERT uses ~10 columns per row.
+    const DB_SELECT_BATCH = 80;
+    const DB_INSERT_BATCH = 8;
     const cachedMap = new Map<string, ISong>();
 
-    for (let i = 0; i < limitedIds.length; i += DB_BATCH_SIZE) {
-      const batchIds = limitedIds.slice(i, i + DB_BATCH_SIZE);
+    for (let i = 0; i < limitedIds.length; i += DB_SELECT_BATCH) {
+      const batchIds = limitedIds.slice(i, i + DB_SELECT_BATCH);
       const cachedSongs = await db
         .select()
         .from(songs)
@@ -316,8 +340,8 @@ export async function lookupSongs(videoIds: string[]): Promise<LookupResult> {
       if (newSongs.size > 0) {
         const songsToUpsert = Array.from(newSongs.values());
 
-        for (let i = 0; i < songsToUpsert.length; i += DB_BATCH_SIZE) {
-          const batch = songsToUpsert.slice(i, i + DB_BATCH_SIZE);
+        for (let i = 0; i < songsToUpsert.length; i += DB_INSERT_BATCH) {
+          const batch = songsToUpsert.slice(i, i + DB_INSERT_BATCH);
           try {
             await db
               .insert(songs)

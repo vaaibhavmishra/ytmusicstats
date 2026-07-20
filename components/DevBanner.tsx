@@ -4,7 +4,7 @@ import { AlertTriangle } from "lucide-react";
 import { useState } from "react";
 
 export function DevBanner() {
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissed, _setDismissed] = useState(false);
 
   if (dismissed) return null;
 
