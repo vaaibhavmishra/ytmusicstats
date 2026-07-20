@@ -1,8 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
-import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import { DevBanner } from "@/components/DevBanner";
 import { Navigation } from "@/components/Navigation";
 import Providers from "@/components/providers";
@@ -192,11 +191,16 @@ export default function RootLayout({
             {/* Main Content - Full screen with beam background */}
             <main className="relative z-10 min-h-screen">
               {children}
-              <Analytics />
-              <SpeedInsights />
             </main>
           </div>
         </Providers>
+        {/* Cloudflare Web Analytics */}
+        <Script
+          type="module"
+          src="https://static.cloudflareinsights.com/beacon.min.js"
+          data-cf-beacon='{"token": "4d66b7ac7d7e4ac8956b859fa9290d87"}'
+        />
+        {/* End Cloudflare Web Analytics */}
       </body>
     </html>
   );
