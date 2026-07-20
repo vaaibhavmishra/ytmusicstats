@@ -32,6 +32,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -76,7 +82,7 @@ export function HomeContent() {
         name: "How do I see my YouTube Music listening history and stats?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "You can see your YouTube Music stats by exporting your data from Google Takeout (takeout.google.com), selecting 'YouTube and YouTube Music', then uploading the watch-history.json file to YTMusic Stats. You'll get detailed analytics including top artists, most played songs, listening time, and patterns.",
+          text: "You can see your YouTube Music stats by exporting your data from Google Takeout (takeout.google.com), selecting 'YouTube and YouTube Music', then uploading the watch-history.json file to YT Music Stats. You'll get detailed analytics including top artists, most played songs, listening time, and patterns.",
         },
       },
       {
@@ -84,7 +90,7 @@ export function HomeContent() {
         name: "Is there a YouTube Music Wrapped like Spotify Wrapped?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "While YouTube Music has its own Recap feature, YTMusic Stats provides a more detailed and always-available Wrapped experience. Unlike YouTube's annual Recap, you can generate your music wrapped anytime with comprehensive stats, top artists, listening patterns, and shareable insights.",
+          text: "While YouTube Music has its own Recap feature, YT Music Stats provides a more detailed and always-available Wrapped experience. Unlike YouTube's annual Recap, you can generate your music wrapped anytime with comprehensive stats, top artists, listening patterns, and shareable insights.",
         },
       },
       {
@@ -92,15 +98,15 @@ export function HomeContent() {
         name: "How do I download my YouTube Music data from Google Takeout?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Go to takeout.google.com, sign in with your Google account, click 'Deselect all', then select only 'YouTube and YouTube Music'. Choose JSON format, click 'Create export', and wait for the download link. Extract the zip file and find the watch-history.json file to upload to YTMusic Stats.",
+          text: "Go to takeout.google.com, sign in with your Google account, click 'Deselect all', then select only 'YouTube and YouTube Music'. Choose JSON format, click 'Create export', and wait for the download link. Extract the zip file and find the watch-history.json file to upload to YT Music Stats.",
         },
       },
       {
         "@type": "Question",
-        name: "Is YTMusic Stats free and safe to use?",
+        name: "Is YT Music Stats free and safe to use?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Yes, YTMusic Stats is completely free and open source. Your data is processed securely and we don't sell or share your information. The entire source code is available on GitHub for transparency. No tracking, no ads, and your privacy is our priority.",
+          text: "Yes, YT Music Stats is completely free and open source. Your data is processed securely and we don't sell or share your information. The entire source code is available on GitHub for transparency. No tracking, no ads, and your privacy is our priority.",
         },
       },
       {
@@ -108,7 +114,7 @@ export function HomeContent() {
         name: "What insights can I get from my YouTube Music history?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "YTMusic Stats provides comprehensive insights including: total listening time, number of unique songs and artists, your top 10 most played artists and songs, listening patterns by time of day and day of week, song age analysis, average song length, music variety percentage, and a personalized Music Wrapped experience.",
+          text: "YT Music Stats provides comprehensive insights including: total listening time, number of unique songs and artists, your top 10 most played artists and songs, listening patterns by time of day and day of week, song age analysis, average song length, music variety percentage, and a personalized Music Wrapped experience.",
         },
       },
     ],
@@ -155,9 +161,9 @@ export function HomeContent() {
               className="text-xl text-muted-foreground"
               variants={itemVariants}
             >
-              Transform your Google Takeout data into personalized music
-              insights. Discover your top artists, most played songs, and
-              listening statistics from your YouTube Music history.
+              YT Music Stats is the free, open-source tool that transforms your
+              Google Takeout data into detailed YT Music stats — top artists,
+              most played songs, listening time, and more.
             </motion.p>
             <motion.div
               className="flex flex-col sm:flex-row gap-4 justify-center"
@@ -184,10 +190,12 @@ export function HomeContent() {
         viewport={{ once: true, margin: "-100px" }}
       >
         <motion.div className="text-center mb-12" variants={itemVariants}>
-          <h2 className="text-3xl font-bold mb-4">Your Music Analytics</h2>
+          <h2 className="text-3xl font-bold mb-4">
+            YouTube Music Analytics Features
+          </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Transform your Google Takeout YouTube Music data into meaningful
-            insights about your listening habits and musical preferences.
+            Everything you need to understand your YouTube Music listening
+            habits. Get detailed YT Music stats from your Google Takeout data.
           </p>
         </motion.div>
 
@@ -267,7 +275,9 @@ export function HomeContent() {
         viewport={{ once: true, margin: "-100px" }}
       >
         <motion.div className="text-center mb-16" variants={itemVariants}>
-          <h2 className="text-3xl font-bold mb-4">How It Works</h2>
+          <h2 className="text-3xl font-bold mb-4">
+            How to See Your YouTube Music Stats
+          </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
             Transform your YouTube Music data into meaningful insights in just a
             few simple steps
@@ -604,6 +614,95 @@ export function HomeContent() {
         </div>
       </motion.section>
 
+      {/* FAQ Section - visible for SEO */}
+      <motion.section
+        id="faq"
+        className="container mx-auto px-4 py-16"
+        variants={containerVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+      >
+        <motion.div className="text-center mb-12" variants={itemVariants}>
+          <h2 className="text-3xl font-bold mb-4">
+            Frequently Asked Questions
+          </h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Common questions about YouTube Music stats, Google Takeout, and how
+            YT Music Stats works.
+          </p>
+        </motion.div>
+
+        <motion.div className="max-w-3xl mx-auto" variants={itemVariants}>
+          <Accordion type="multiple" className="w-full">
+            <AccordionItem value="how-to-see-stats">
+              <AccordionTrigger className="text-base">
+                How do I see my YouTube Music listening history and stats?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                You can see your YouTube Music stats by exporting your data from
+                Google Takeout (takeout.google.com), selecting &quot;YouTube and
+                YouTube Music&quot;, then uploading the watch-history.json file
+                to YT Music Stats. You&apos;ll get detailed analytics including
+                top artists, most played songs, listening time, and patterns.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="youtube-music-wrapped">
+              <AccordionTrigger className="text-base">
+                Is there a YouTube Music Wrapped like Spotify Wrapped?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                While YouTube Music has its own Recap feature, YT Music Stats
+                provides a more detailed and always-available Wrapped
+                experience. Unlike YouTube&apos;s annual Recap, you can generate
+                your music wrapped anytime with comprehensive stats, top
+                artists, listening patterns, and shareable insights.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="google-takeout">
+              <AccordionTrigger className="text-base">
+                How do I download my YouTube Music data from Google Takeout?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Go to takeout.google.com, sign in with your Google account,
+                click &quot;Deselect all&quot;, then select only &quot;YouTube
+                and YouTube Music&quot;. Choose JSON format, click &quot;Create
+                export&quot;, and wait for the download link. Extract the zip
+                file and find the watch-history.json file to upload to YT Music
+                Stats.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="free-and-safe">
+              <AccordionTrigger className="text-base">
+                Is YT Music Stats free and safe to use?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Yes, YT Music Stats is completely free and open source. Your
+                data is processed entirely in your browser — it never leaves
+                your device. We don&apos;t sell or share your information. The
+                entire source code is available on GitHub for transparency.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="insights">
+              <AccordionTrigger className="text-base">
+                What insights can I get from my YouTube Music history?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                YT Music Stats provides comprehensive insights including: total
+                listening time, number of unique songs and artists, your top 10
+                most played artists and songs, listening patterns by time of day
+                and day of week, song age analysis, average song length, music
+                variety percentage, and a personalized Music Wrapped experience.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </motion.div>
+      </motion.section>
+
       {/* Footer */}
       <footer className="border-t bg-background">
         <div className="container mx-auto px-4 py-12">
@@ -612,11 +711,13 @@ export function HomeContent() {
             <div className="md:col-span-2">
               <div className="flex items-center space-x-2 mb-4">
                 <Music className="h-6 w-6 text-primary" />
-                <span className="text-xl font-bold">YTMusic Stats</span>
+                <span className="text-xl font-bold">YT Music Stats</span>
               </div>
               <p className="text-muted-foreground mb-6 max-w-md">
-                Transform your YouTube Music listening history into meaningful
-                insights. Discover your musical journey through data analytics.
+                The #1 free tool to analyze your YouTube Music listening
+                history. Get detailed YT Music stats, top artists, most played
+                songs, and personalized music insights from your Google Takeout
+                data.
               </p>
               <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                 <Heart className="h-4 w-4 text-red-500" />
@@ -703,7 +804,7 @@ export function HomeContent() {
           {/* Bottom Section */}
           <div className="border-t mt-8 pt-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-              <span>© {new Date().getFullYear()} YTMusic Stats</span>
+              <span>© {new Date().getFullYear()} YT Music Stats</span>
               <span>•</span>
               <span>Open Source</span>
               <span>•</span>

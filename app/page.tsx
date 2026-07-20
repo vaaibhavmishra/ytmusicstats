@@ -6,10 +6,11 @@ import { auth } from "@/lib/auth/config";
 
 export const metadata: Metadata = {
   title: {
-    absolute: "YTMusic Stats - Analyze Your YouTube Music Listening History",
+    absolute:
+      "YT Music Stats – Free YouTube Music Stats Tracker & History Analyzer",
   },
   description:
-    "Transform your Google Takeout data into personalized music insights. Discover your top artists, most played songs, listening patterns, and detailed statistics from your YouTube Music history. Free and open-source.",
+    "YT Music Stats is the best free YouTube Music stats tool. Upload your Google Takeout data to discover your top artists, most played songs, total listening time, and detailed YT Music stats. Open-source, privacy-first, no ads.",
   alternates: {
     canonical: "/",
   },

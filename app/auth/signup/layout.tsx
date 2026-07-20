@@ -4,20 +4,20 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/config";
 
 export const metadata: Metadata = {
-  title: "Create Account",
+  title: "Create Free Account – YouTube Music Stats Analyzer",
   description:
-    "Create a free YTMusic Stats account to analyze your YouTube Music listening history. Discover your top artists, most played songs, and listening patterns.",
+    "Create a free YT Music Stats account to analyze your YouTube Music listening history. Get your top artists, most played songs, listening time, and personalized YT Music stats.",
   robots: {
-    index: false,
+    index: true,
     follow: true,
   },
   alternates: {
     canonical: "/auth/signup",
   },
   openGraph: {
-    title: "Create Account | YTMusic Stats",
+    title: "Create Free Account | YT Music Stats",
     description:
-      "Create a free account to analyze your YouTube Music listening history.",
+      "Sign up free to analyze your YouTube Music stats and listening history.",
   },
 };
 

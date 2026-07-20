@@ -102,7 +102,7 @@ export function SummarySlide({ stats, userName }: SummarySlideProps) {
 
         const shareData = {
           files: [file],
-          title: `My ${year} YTMusic Wrapped`,
+          title: `My ${year} YT Music Wrapped`,
           text: `Check out my ${year} music stats!`,
         };
 
@@ -203,7 +203,7 @@ export function SummarySlide({ stats, userName }: SummarySlideProps) {
                   <Music className="h-3.5 w-3.5 text-white" />
                 </div>
                 <span className="font-semibold text-xs text-white/90">
-                  YTMusic Wrapped
+                  YT Music Wrapped
                 </span>
               </div>
               <span

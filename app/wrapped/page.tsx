@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     canonical: "/wrapped",
   },
   openGraph: {
-    title: "My Music Wrapped | YTMusic Stats",
+    title: "My Music Wrapped | YT Music Stats",
     description: "Check out my personalized YouTube Music Wrapped experience!",
   },
 };
