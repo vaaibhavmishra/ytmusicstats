@@ -1,17 +1,25 @@
-import { drizzle } from "drizzle-orm/neon-http";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { drizzle } from "drizzle-orm/d1";
 
-const DATABASE_URL = process.env.DATABASE_URL;
-
-if (!DATABASE_URL) {
-  throw new Error(
-    "Please define the DATABASE_URL environment variable inside .env.local",
-  );
+/**
+ * Build a Drizzle client bound to the request's D1 instance.
+ *
+ * The `env.DB` binding only exists inside the Cloudflare Workers runtime, so this
+ * must be called during a request (server action, RSC render, or route handler) —
+ * never at module load.
+ */
+export function getDb() {
+  const { env } = getCloudflareContext();
+  return drizzle(env.DB);
 }
 
 /**
- * Neon serverless HTTP driver — each query is a stateless HTTP request with no
- * persistent TCP connection pool. This avoids connection exhaustion on Vercel
- * where multiple serverless functions run concurrently (e.g. 4 parallel
- * `lookupSongs` calls would previously create 4 separate TCP pools).
+ * Backwards-compatible lazy client: resolves the request-scoped binding on first
+ * property access, so existing `import { db } from "@/lib/db"` call sites (and the
+ * Better Auth adapter) keep working without change.
  */
-export const db = drizzle(DATABASE_URL);
+export const db = new Proxy({} as ReturnType<typeof getDb>, {
+  get(_target, prop, receiver) {
+    return Reflect.get(getDb(), prop, receiver);
+  },
+});

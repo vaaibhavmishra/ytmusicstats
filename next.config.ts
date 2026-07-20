@@ -1,3 +1,4 @@
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -26,3 +27,6 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+
+// Enables `getCloudflareContext()` (and the local D1 binding) under `next dev`.
+initOpenNextCloudflareForDev();

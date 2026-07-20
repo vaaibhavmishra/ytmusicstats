@@ -1,1195 +1,990 @@
 {
-  "version": "8",
-  "dialect": "postgres",
-  "id": "b6c61ec3-d8ca-4b90-bfcb-ad9e39e6ddcc",
-  "prevIds": ["00000000-0000-0000-0000-000000000000"],
+  "version": "7",
+  "dialect": "sqlite",
+  "id": "ed5b2b37-b635-4a4c-8743-91dad3ce0175",
+  "prevIds": [
+    "00000000-0000-0000-0000-000000000000"
+  ],
   "ddl": [
     {
-      "isRlsEnabled": false,
       "name": "account",
-      "entityType": "tables",
-      "schema": "public"
+      "entityType": "tables"
     },
     {
-      "isRlsEnabled": false,
       "name": "session",
-      "entityType": "tables",
-      "schema": "public"
+      "entityType": "tables"
     },
     {
-      "isRlsEnabled": false,
       "name": "songs",
-      "entityType": "tables",
-      "schema": "public"
+      "entityType": "tables"
     },
     {
-      "isRlsEnabled": false,
       "name": "user",
-      "entityType": "tables",
-      "schema": "public"
+      "entityType": "tables"
     },
     {
-      "isRlsEnabled": false,
       "name": "user_stats",
-      "entityType": "tables",
-      "schema": "public"
+      "entityType": "tables"
     },
     {
-      "isRlsEnabled": false,
       "name": "verification",
-      "entityType": "tables",
-      "schema": "public"
+      "entityType": "tables"
     },
     {
       "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
+      "notNull": false,
+      "autoincrement": false,
       "default": null,
       "generated": null,
-      "identity": null,
       "name": "id",
       "entityType": "columns",
-      "schema": "public",
       "table": "account"
     },
     {
       "type": "text",
-      "typeSchema": null,
       "notNull": true,
-      "dimensions": 0,
+      "autoincrement": false,
       "default": null,
       "generated": null,
-      "identity": null,
-      "name": "user_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "account"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
       "name": "account_id",
       "entityType": "columns",
-      "schema": "public",
       "table": "account"
     },
     {
       "type": "text",
-      "typeSchema": null,
       "notNull": true,
-      "dimensions": 0,
+      "autoincrement": false,
       "default": null,
       "generated": null,
-      "identity": null,
       "name": "provider_id",
       "entityType": "columns",
-      "schema": "public",
       "table": "account"
     },
     {
       "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
+      "notNull": true,
+      "autoincrement": false,
       "default": null,
       "generated": null,
-      "identity": null,
+      "name": "user_id",
+      "entityType": "columns",
+      "table": "account"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
       "name": "access_token",
       "entityType": "columns",
-      "schema": "public",
       "table": "account"
     },
     {
       "type": "text",
-      "typeSchema": null,
       "notNull": false,
-      "dimensions": 0,
+      "autoincrement": false,
       "default": null,
       "generated": null,
-      "identity": null,
       "name": "refresh_token",
       "entityType": "columns",
-      "schema": "public",
-      "table": "account"
-    },
-    {
-      "type": "timestamp(6) with time zone",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "access_token_expires_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "account"
-    },
-    {
-      "type": "timestamp(6) with time zone",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "refresh_token_expires_at",
-      "entityType": "columns",
-      "schema": "public",
       "table": "account"
     },
     {
       "type": "text",
-      "typeSchema": null,
       "notNull": false,
-      "dimensions": 0,
+      "autoincrement": false,
       "default": null,
       "generated": null,
-      "identity": null,
-      "name": "scope",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "account"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
       "name": "id_token",
       "entityType": "columns",
-      "schema": "public",
+      "table": "account"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "access_token_expires_at",
+      "entityType": "columns",
+      "table": "account"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "refresh_token_expires_at",
+      "entityType": "columns",
       "table": "account"
     },
     {
       "type": "text",
-      "typeSchema": null,
       "notNull": false,
-      "dimensions": 0,
+      "autoincrement": false,
       "default": null,
       "generated": null,
-      "identity": null,
+      "name": "scope",
+      "entityType": "columns",
+      "table": "account"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
       "name": "password",
       "entityType": "columns",
-      "schema": "public",
       "table": "account"
     },
     {
-      "type": "timestamp(6) with time zone",
-      "typeSchema": null,
+      "type": "integer",
       "notNull": true,
-      "dimensions": 0,
-      "default": null,
+      "autoincrement": false,
+      "default": "(unixepoch())",
       "generated": null,
-      "identity": null,
       "name": "created_at",
       "entityType": "columns",
-      "schema": "public",
       "table": "account"
     },
     {
-      "type": "timestamp(6) with time zone",
-      "typeSchema": null,
+      "type": "integer",
       "notNull": true,
-      "dimensions": 0,
+      "autoincrement": false,
       "default": null,
       "generated": null,
-      "identity": null,
       "name": "updated_at",
       "entityType": "columns",
-      "schema": "public",
       "table": "account"
     },
     {
       "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
+      "notNull": false,
+      "autoincrement": false,
       "default": null,
       "generated": null,
-      "identity": null,
       "name": "id",
       "entityType": "columns",
-      "schema": "public",
+      "table": "session"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "expires_at",
+      "entityType": "columns",
       "table": "session"
     },
     {
       "type": "text",
-      "typeSchema": null,
       "notNull": true,
-      "dimensions": 0,
+      "autoincrement": false,
       "default": null,
       "generated": null,
-      "identity": null,
-      "name": "user_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "session"
-    },
-    {
-      "type": "varchar(255)",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
       "name": "token",
       "entityType": "columns",
-      "schema": "public",
       "table": "session"
     },
     {
-      "type": "timestamp(6) with time zone",
-      "typeSchema": null,
+      "type": "integer",
       "notNull": true,
-      "dimensions": 0,
+      "autoincrement": false,
+      "default": "(unixepoch())",
+      "generated": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "table": "session"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
       "default": null,
       "generated": null,
-      "identity": null,
-      "name": "expires_at",
+      "name": "updated_at",
       "entityType": "columns",
-      "schema": "public",
       "table": "session"
     },
     {
       "type": "text",
-      "typeSchema": null,
       "notNull": false,
-      "dimensions": 0,
+      "autoincrement": false,
       "default": null,
       "generated": null,
-      "identity": null,
       "name": "ip_address",
       "entityType": "columns",
-      "schema": "public",
       "table": "session"
     },
     {
       "type": "text",
-      "typeSchema": null,
       "notNull": false,
-      "dimensions": 0,
+      "autoincrement": false,
       "default": null,
       "generated": null,
-      "identity": null,
       "name": "user_agent",
       "entityType": "columns",
-      "schema": "public",
       "table": "session"
     },
     {
-      "type": "timestamp(6) with time zone",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "session"
-    },
-    {
-      "type": "timestamp(6) with time zone",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "updated_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "session"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": {
-        "type": "always",
-        "name": "songs_id_seq",
-        "increment": "1",
-        "startWith": "1",
-        "minValue": "1",
-        "maxValue": "2147483647",
-        "cache": 1,
-        "cycle": false
-      },
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "songs"
-    },
-    {
       "type": "text",
-      "typeSchema": null,
       "notNull": true,
-      "dimensions": 0,
+      "autoincrement": false,
       "default": null,
       "generated": null,
-      "identity": null,
-      "name": "key",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "songs"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "youtube_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "songs"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "title",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "songs"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "artist",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "songs"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "channel_title",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "songs"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "duration",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "songs"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "thumbnail",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "songs"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "artist_image",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "songs"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "release_date",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "songs"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "songs"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "updated_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "songs"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "name",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user"
-    },
-    {
-      "type": "varchar(255)",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "email",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user"
-    },
-    {
-      "type": "boolean",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "email_verified",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "image",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user"
-    },
-    {
-      "type": "timestamp(6) with time zone",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user"
-    },
-    {
-      "type": "timestamp(6) with time zone",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "updated_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": {
-        "type": "always",
-        "name": "user_stats_id_seq",
-        "increment": "1",
-        "startWith": "1",
-        "minValue": "1",
-        "maxValue": "2147483647",
-        "cache": 1,
-        "cycle": false
-      },
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user_stats"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
       "name": "user_id",
       "entityType": "columns",
-      "schema": "public",
-      "table": "user_stats"
+      "table": "session"
     },
     {
       "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "0",
-      "generated": null,
-      "identity": null,
-      "name": "total_songs",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user_stats"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "0",
-      "generated": null,
-      "identity": null,
-      "name": "total_artists",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user_stats"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "0",
-      "generated": null,
-      "identity": null,
-      "name": "total_playtime",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user_stats"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "0",
-      "generated": null,
-      "identity": null,
-      "name": "average_song_length",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user_stats"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
       "notNull": false,
-      "dimensions": 0,
+      "autoincrement": true,
       "default": null,
       "generated": null,
-      "identity": null,
-      "name": "top_artist",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user_stats"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "top_song",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user_stats"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "first_play_date",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user_stats"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "last_play_date",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user_stats"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "0",
-      "generated": null,
-      "identity": null,
-      "name": "total_listens",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user_stats"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "0",
-      "generated": null,
-      "identity": null,
-      "name": "monthly_playtime",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user_stats"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "0",
-      "generated": null,
-      "identity": null,
-      "name": "daily_average_listens",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user_stats"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "0",
-      "generated": null,
-      "identity": null,
-      "name": "daily_average_playtime",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user_stats"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "longest_listen_day",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user_stats"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "0",
-      "generated": null,
-      "identity": null,
-      "name": "longest_listen_day_duration",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user_stats"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "0",
-      "generated": null,
-      "identity": null,
-      "name": "longest_session",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user_stats"
-    },
-    {
-      "type": "jsonb",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "'[]'",
-      "generated": null,
-      "identity": null,
-      "name": "top_songs",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user_stats"
-    },
-    {
-      "type": "jsonb",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "'[]'",
-      "generated": null,
-      "identity": null,
-      "name": "top_artists",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user_stats"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "0",
-      "generated": null,
-      "identity": null,
-      "name": "new_artists_this_month",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user_stats"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "0",
-      "generated": null,
-      "identity": null,
-      "name": "total_new_artists",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user_stats"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "listening_age",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user_stats"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "average_release_year",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user_stats"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "music_era",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user_stats"
-    },
-    {
-      "type": "jsonb",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "decade_distribution",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user_stats"
-    },
-    {
-      "type": "jsonb",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "oldest_song",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user_stats"
-    },
-    {
-      "type": "jsonb",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "newest_song",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user_stats"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": "0",
-      "generated": null,
-      "identity": null,
-      "name": "songs_with_year_count",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user_stats"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "last_updated",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user_stats"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user_stats"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "updated_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user_stats"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
       "name": "id",
       "entityType": "columns",
-      "schema": "public",
-      "table": "verification"
+      "table": "songs"
     },
     {
       "type": "text",
-      "typeSchema": null,
       "notNull": true,
-      "dimensions": 0,
+      "autoincrement": false,
       "default": null,
       "generated": null,
-      "identity": null,
-      "name": "identifier",
+      "name": "key",
       "entityType": "columns",
-      "schema": "public",
-      "table": "verification"
+      "table": "songs"
     },
     {
       "type": "text",
-      "typeSchema": null,
       "notNull": true,
-      "dimensions": 0,
+      "autoincrement": false,
       "default": null,
       "generated": null,
-      "identity": null,
-      "name": "value",
+      "name": "youtube_id",
       "entityType": "columns",
-      "schema": "public",
-      "table": "verification"
+      "table": "songs"
     },
     {
-      "type": "timestamp(6) with time zone",
-      "typeSchema": null,
+      "type": "text",
       "notNull": true,
-      "dimensions": 0,
+      "autoincrement": false,
       "default": null,
       "generated": null,
-      "identity": null,
-      "name": "expires_at",
+      "name": "title",
       "entityType": "columns",
-      "schema": "public",
-      "table": "verification"
+      "table": "songs"
     },
     {
-      "type": "timestamp(6) with time zone",
-      "typeSchema": null,
+      "type": "text",
       "notNull": true,
-      "dimensions": 0,
+      "autoincrement": false,
       "default": null,
       "generated": null,
-      "identity": null,
+      "name": "artist",
+      "entityType": "columns",
+      "table": "songs"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "channel_title",
+      "entityType": "columns",
+      "table": "songs"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "duration",
+      "entityType": "columns",
+      "table": "songs"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "thumbnail",
+      "entityType": "columns",
+      "table": "songs"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "artist_image",
+      "entityType": "columns",
+      "table": "songs"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "release_date",
+      "entityType": "columns",
+      "table": "songs"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "(unixepoch())",
+      "generated": null,
       "name": "created_at",
       "entityType": "columns",
-      "schema": "public",
-      "table": "verification"
+      "table": "songs"
     },
     {
-      "type": "timestamp(6) with time zone",
-      "typeSchema": null,
+      "type": "integer",
       "notNull": true,
-      "dimensions": 0,
-      "default": null,
+      "autoincrement": false,
+      "default": "(unixepoch())",
       "generated": null,
-      "identity": null,
       "name": "updated_at",
       "entityType": "columns",
-      "schema": "public",
+      "table": "songs"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "user"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "name",
+      "entityType": "columns",
+      "table": "user"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "email",
+      "entityType": "columns",
+      "table": "user"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "false",
+      "generated": null,
+      "name": "email_verified",
+      "entityType": "columns",
+      "table": "user"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "image",
+      "entityType": "columns",
+      "table": "user"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "(unixepoch())",
+      "generated": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "table": "user"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "(unixepoch())",
+      "generated": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "table": "user"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": true,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "user_stats"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "user_id",
+      "entityType": "columns",
+      "table": "user_stats"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "0",
+      "generated": null,
+      "name": "total_songs",
+      "entityType": "columns",
+      "table": "user_stats"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "0",
+      "generated": null,
+      "name": "total_artists",
+      "entityType": "columns",
+      "table": "user_stats"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "0",
+      "generated": null,
+      "name": "total_playtime",
+      "entityType": "columns",
+      "table": "user_stats"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "0",
+      "generated": null,
+      "name": "average_song_length",
+      "entityType": "columns",
+      "table": "user_stats"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "top_artist",
+      "entityType": "columns",
+      "table": "user_stats"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "top_song",
+      "entityType": "columns",
+      "table": "user_stats"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "first_play_date",
+      "entityType": "columns",
+      "table": "user_stats"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "last_play_date",
+      "entityType": "columns",
+      "table": "user_stats"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "0",
+      "generated": null,
+      "name": "total_listens",
+      "entityType": "columns",
+      "table": "user_stats"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "0",
+      "generated": null,
+      "name": "monthly_playtime",
+      "entityType": "columns",
+      "table": "user_stats"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "0",
+      "generated": null,
+      "name": "daily_average_listens",
+      "entityType": "columns",
+      "table": "user_stats"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "0",
+      "generated": null,
+      "name": "daily_average_playtime",
+      "entityType": "columns",
+      "table": "user_stats"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "longest_listen_day",
+      "entityType": "columns",
+      "table": "user_stats"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "0",
+      "generated": null,
+      "name": "longest_listen_day_duration",
+      "entityType": "columns",
+      "table": "user_stats"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "0",
+      "generated": null,
+      "name": "longest_session",
+      "entityType": "columns",
+      "table": "user_stats"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "'[]'",
+      "generated": null,
+      "name": "top_songs",
+      "entityType": "columns",
+      "table": "user_stats"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "'[]'",
+      "generated": null,
+      "name": "top_artists",
+      "entityType": "columns",
+      "table": "user_stats"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "0",
+      "generated": null,
+      "name": "new_artists_this_month",
+      "entityType": "columns",
+      "table": "user_stats"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "0",
+      "generated": null,
+      "name": "total_new_artists",
+      "entityType": "columns",
+      "table": "user_stats"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "listening_age",
+      "entityType": "columns",
+      "table": "user_stats"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "average_release_year",
+      "entityType": "columns",
+      "table": "user_stats"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "music_era",
+      "entityType": "columns",
+      "table": "user_stats"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "decade_distribution",
+      "entityType": "columns",
+      "table": "user_stats"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "oldest_song",
+      "entityType": "columns",
+      "table": "user_stats"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "newest_song",
+      "entityType": "columns",
+      "table": "user_stats"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": "0",
+      "generated": null,
+      "name": "songs_with_year_count",
+      "entityType": "columns",
+      "table": "user_stats"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "(unixepoch())",
+      "generated": null,
+      "name": "last_updated",
+      "entityType": "columns",
+      "table": "user_stats"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "(unixepoch())",
+      "generated": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "table": "user_stats"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "(unixepoch())",
+      "generated": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "table": "user_stats"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
       "table": "verification"
     },
     {
-      "nameExplicit": false,
-      "columns": ["user_id"],
-      "schemaTo": "public",
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "identifier",
+      "entityType": "columns",
+      "table": "verification"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "value",
+      "entityType": "columns",
+      "table": "verification"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "expires_at",
+      "entityType": "columns",
+      "table": "verification"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "(unixepoch())",
+      "generated": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "table": "verification"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "(unixepoch())",
+      "generated": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "table": "verification"
+    },
+    {
+      "columns": [
+        "user_id"
+      ],
       "tableTo": "user",
-      "columnsTo": ["id"],
+      "columnsTo": [
+        "id"
+      ],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
-      "name": "account_user_id_user_id_fkey",
+      "nameExplicit": false,
+      "name": "fk_account_user_id_user_id_fk",
       "entityType": "fks",
-      "schema": "public",
       "table": "account"
     },
     {
-      "nameExplicit": false,
-      "columns": ["user_id"],
-      "schemaTo": "public",
+      "columns": [
+        "user_id"
+      ],
       "tableTo": "user",
-      "columnsTo": ["id"],
+      "columnsTo": [
+        "id"
+      ],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
-      "name": "session_user_id_user_id_fkey",
+      "nameExplicit": false,
+      "name": "fk_session_user_id_user_id_fk",
       "entityType": "fks",
-      "schema": "public",
       "table": "session"
     },
     {
-      "nameExplicit": false,
-      "columns": ["user_id"],
-      "schemaTo": "public",
+      "columns": [
+        "user_id"
+      ],
       "tableTo": "user",
-      "columnsTo": ["id"],
+      "columnsTo": [
+        "id"
+      ],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
-      "name": "user_stats_user_id_user_id_fkey",
+      "nameExplicit": false,
+      "name": "fk_user_stats_user_id_user_id_fk",
       "entityType": "fks",
-      "schema": "public",
       "table": "user_stats"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
-      "name": "account_pkey",
-      "schema": "public",
+      "name": "account_pk",
       "table": "account",
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
-      "name": "session_pkey",
-      "schema": "public",
+      "name": "session_pk",
       "table": "session",
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
-      "name": "songs_pkey",
-      "schema": "public",
+      "name": "songs_pk",
       "table": "songs",
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
-      "name": "user_pkey",
-      "schema": "public",
+      "name": "user_pk",
       "table": "user",
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
-      "name": "user_stats_pkey",
-      "schema": "public",
+      "name": "user_stats_pk",
       "table": "user_stats",
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
-      "name": "verification_pkey",
-      "schema": "public",
+      "name": "verification_pk",
       "table": "verification",
       "entityType": "pks"
     },
     {
-      "nameExplicit": false,
-      "columns": ["token"],
-      "nullsNotDistinct": false,
-      "name": "session_token_key",
-      "schema": "public",
-      "table": "session",
-      "entityType": "uniques"
+      "columns": [
+        {
+          "value": "user_id",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "account_userId_idx",
+      "entityType": "indexes",
+      "table": "account"
     },
     {
-      "nameExplicit": false,
-      "columns": ["key"],
-      "nullsNotDistinct": false,
-      "name": "songs_key_key",
-      "schema": "public",
-      "table": "songs",
-      "entityType": "uniques"
+      "columns": [
+        {
+          "value": "user_id",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "session_userId_idx",
+      "entityType": "indexes",
+      "table": "session"
     },
     {
-      "nameExplicit": false,
-      "columns": ["youtube_id"],
-      "nullsNotDistinct": false,
-      "name": "songs_youtube_id_key",
-      "schema": "public",
-      "table": "songs",
-      "entityType": "uniques"
+      "columns": [
+        {
+          "value": "identifier",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "verification_identifier_idx",
+      "entityType": "indexes",
+      "table": "verification"
     },
     {
+      "columns": [
+        "token"
+      ],
       "nameExplicit": false,
-      "columns": ["email"],
-      "nullsNotDistinct": false,
-      "name": "user_email_key",
-      "schema": "public",
-      "table": "user",
-      "entityType": "uniques"
+      "name": "session_token_unique",
+      "entityType": "uniques",
+      "table": "session"
     },
     {
+      "columns": [
+        "key"
+      ],
       "nameExplicit": false,
-      "columns": ["user_id"],
-      "nullsNotDistinct": false,
-      "name": "user_stats_user_id_key",
-      "schema": "public",
-      "table": "user_stats",
-      "entityType": "uniques"
+      "name": "songs_key_unique",
+      "entityType": "uniques",
+      "table": "songs"
+    },
+    {
+      "columns": [
+        "youtube_id"
+      ],
+      "nameExplicit": false,
+      "name": "songs_youtube_id_unique",
+      "entityType": "uniques",
+      "table": "songs"
+    },
+    {
+      "columns": [
+        "email"
+      ],
+      "nameExplicit": false,
+      "name": "user_email_unique",
+      "entityType": "uniques",
+      "table": "user"
+    },
+    {
+      "columns": [
+        "user_id"
+      ],
+      "nameExplicit": false,
+      "name": "user_stats_user_id_unique",
+      "entityType": "uniques",
+      "table": "user_stats"
     }
   ],
   "renames": []

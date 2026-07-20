@@ -1,18 +1,20 @@
-import { defineConfig } from "drizzle-kit";
+import dotenv from 'dotenv';
+import { defineConfig } from 'drizzle-kit';
 
-const DATABASE_URL = process.env.DATABASE_URL;
+dotenv.config({ path: '.env.local' });
 
-if (!DATABASE_URL) {
-  throw new Error(
-    "Please define the DATABASE_URL environment variable inside .env.local",
-  );
+if(!process.env.CLOUDFLARE_ACCOUNT_ID || !process.env.CLOUDFLARE_DATABASE_ID || !process.env.CLOUDFLARE_D1_TOKEN) {
+  throw new Error("Please provide all the Cloudflare credentials");
 }
 
 export default defineConfig({
-  schema: "./lib/db/schema.ts",
-  out: "./drizzle",
-  dialect: "postgresql",
+  out: './drizzle',
+  schema: './lib/db/schema.ts',
+  dialect: 'sqlite',
+  driver: 'd1-http',
   dbCredentials: {
-    url: DATABASE_URL,
+    accountId: process.env.CLOUDFLARE_ACCOUNT_ID,
+    databaseId: process.env.CLOUDFLARE_DATABASE_ID,
+    token: process.env.CLOUDFLARE_D1_TOKEN,
   },
 });

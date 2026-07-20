@@ -16,11 +16,29 @@ Package manager is **pnpm** (v11). Node 18+.
 
 No test runner is configured. The pure logic modules (`lib/parsing/*`, `lib/concurrency.ts`) are deliberately written free of DOM/`self`/server globals so they *can* be unit-tested in Node if a runner is added.
 
-Environment variables live in `.env.local` (not `.env`): `DATABASE_URL` (PostgreSQL connection string), `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `YOUTUBE_API_KEY`, `NEXT_PUBLIC_APP_URL`.
+### Deploy & database (Cloudflare)
+
+The app runs on **Cloudflare Workers** via **OpenNext** (`@opennextjs/cloudflare`), with **D1** (SQLite) as the database. `wrangler.jsonc` holds the bindings (`DB` → D1, `ASSETS`, `IMAGES`, `WORKER_SELF_REFERENCE`).
+
+- `pnpm preview` — build with OpenNext and preview the Worker locally
+- `pnpm deploy` — migrate remote D1, then build + deploy the Worker
+- `pnpm cf-typegen` — regenerate `cloudflare-env.d.ts` from the Worker's bindings/vars
+
+**Migrations** — drizzle-kit generates, Wrangler applies, no bridging step:
+
+- `pnpm db:generate` — `drizzle-kit generate` writes the nested `drizzle/<timestamp>_<name>/migration.sql` (+ `snapshot.json`). Run after editing `lib/db/schema.ts`.
+- `pnpm db:migrate:local` / `pnpm db:migrate:remote` — `wrangler d1 migrations apply` against local / remote D1.
+- Wrangler reads that nested layout directly: `wrangler.jsonc` sets `migrations_dir: "drizzle"` **and** `migrations_pattern: "drizzle/*/migration.sql"`. The `migrations_pattern` glob (Cloudflare, since 2026-06) is what lets Wrangler discover drizzle's per-migration folders — without it, Wrangler only matches flat `*.sql` and finds nothing. Keep both keys in sync if `out` in `drizzle.config.ts` ever changes. Applied migrations are tracked in the `d1_migrations` table by their `<folder>/migration.sql` path, so don't rename existing migration folders.
+
+**Dev vs prod DB isolation.** There is one remote D1 (`ytmusicstats-production`) and a separate **local** D1 that `pnpm dev`/`pnpm preview` use automatically — a SQLite file under `.wrangler/state/v3/d1`, wired up by `initOpenNextCloudflareForDev()` in `next.config.ts`. The rule that keeps them apart: **dev always uses `--local`, production always uses `--remote`.** `pnpm db:migrate:local` and `pnpm dev` never touch the remote DB; only `pnpm db:migrate:remote` (and `pnpm deploy`, which calls it) does. To reset local data, delete `.wrangler/state/v3/d1` and re-run `pnpm db:migrate:local`.
+
+Typical schema change: edit `lib/db/schema.ts` → `pnpm db:generate` → commit → `pnpm db:migrate:local` for dev; `pnpm deploy` applies remote automatically.
+
+**Environment / secrets** — local dev reads `.env.local` and `.dev.vars`. Production values are **not** read from `.env.local`; set them with `wrangler secret put` (`BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `YOUTUBE_API_KEY`, plus Dodo payment keys if billing is enabled). D1 is reached through the `DB` binding, **not** a connection string — there is no `DATABASE_URL` in code. `drizzle-kit push`/`studio` against remote D1 is opt-in and needs `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_DATABASE_ID`, `CLOUDFLARE_D1_TOKEN`.
 
 ## Stack
 
-Next.js 16 (App Router, RSC) · React 19 with the **React Compiler enabled** (`reactCompiler: true` in `next.config.ts`) · TypeScript · Tailwind CSS v4 · shadcn/ui (new-york style, in `components/ui`) · PostgreSQL via Drizzle ORM · Better Auth (email/password + Google OAuth, using Drizzle adapter). Path alias `@/*` maps to the repo root.
+Next.js 16 (App Router, RSC) · React 19 with the **React Compiler enabled** (`reactCompiler: true` in `next.config.ts`) · TypeScript · Tailwind CSS v4 · shadcn/ui (new-york style, in `components/ui`) · **Cloudflare D1** (SQLite) via Drizzle ORM · Better Auth (email/password + Google OAuth, using Drizzle adapter). Deployed to **Cloudflare Workers** via OpenNext. Path alias `@/*` maps to the repo root.
 
 ## Architecture — the data pipeline
 
@@ -53,7 +71,7 @@ Computation lives in **pure, global-free modules** so the same code runs in a We
 
 ## Backend specifics
 
-- **Single DB via Drizzle ORM.** All tables (auth + app data) live in a single PostgreSQL database. The Drizzle client is in `lib/db/index.ts` (stateless HTTP driver — no connection pooling or `connectDB()` calls needed). Schema is in `lib/db/schema.ts`.
+- **Single DB via Drizzle ORM.** All tables (auth + app data) live in a single Cloudflare D1 (SQLite) database. The Drizzle client is in `lib/db/index.ts`, built with `drizzle-orm/d1` over the request-scoped `getCloudflareContext().env.DB` binding. Because that binding only exists inside a request in the Workers runtime, **never construct the client at module load** — the exported `db` is a lazy `Proxy` that resolves the binding on first property access, and `getDb()` is available for explicit use. Schema is in `lib/db/schema.ts` using `drizzle-orm/sqlite-core`.
 - **`lookupSongs`** (`app/actions/songs.ts`) is the metadata resolver: checks the `songs` table cache via `inArray()`, fetches misses from the YouTube Data API (batched 50 IDs/request, concurrency-limited via `mapWithConcurrency`), upserts results into cache via `onConflictDoUpdate`. Guards with auth + origin checks and caps input at 8000 IDs.
 - **`/api/stats`** — GET returns the caller's `user_stats` row; POST accepts client-computed stats validated against an explicit Zod schema (arbitrary fields rejected). Auth via `auth.api.getSession`.
 - Tables: `songs` (metadata cache, keyed by `youtube_id`), `user_stats` (one aggregated row per user), plus Better Auth tables (`user`, `session`, `account`, `verification`).
