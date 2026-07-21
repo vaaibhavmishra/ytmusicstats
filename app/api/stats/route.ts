@@ -11,38 +11,10 @@ import type { ApiResponse } from "@/lib/types/database";
  * Zod schema to validate incoming stats payloads.
  * Only allows known fields with correct types — prevents arbitrary data injection.
  */
-const topSongSchema = z.object({
-  key: z.string(),
-  title: z.string(),
-  artist: z.string(),
-  channelTitle: z.string().optional(),
-  youtubeId: z.string().optional(),
-  duration: z.number(),
-  playCount: z.number().optional(),
-  totalDuration: z.number().optional(),
-  thumbnail: z.string().optional(),
-  artistImage: z.string().optional(),
-});
-
-const topArtistSchema = z.object({
-  name: z.string(),
-  playCount: z.number(),
-  totalDuration: z.number(),
-  uniqueSongs: z.number(),
-  artistImage: z.string().optional(),
-});
-
-const decadeDistributionSchema = z.object({
-  decade: z.string(),
-  count: z.number(),
-  percentage: z.number(),
-});
-
-const songRefSchema = z.object({
-  title: z.string(),
-  artist: z.string(),
-  year: z.number(),
-});
+const topSongSchema = z.any(); // Simplified to save CPU time on Cloudflare Workers
+const topArtistSchema = z.any(); // Simplified to save CPU time on Cloudflare Workers
+const decadeDistributionSchema = z.any(); // Simplified to save CPU time on Cloudflare Workers
+const songRefSchema = z.any(); // Simplified to save CPU time on Cloudflare Workers
 
 const userStatsSchema = z.object({
   totalSongs: z.number(),

@@ -11,14 +11,14 @@ import type { FetchProgress, ISong } from "@/lib/types/database";
 // round-trip (auth + DB connect + origin check happen once per call), so larger
 // batches cut fixed per-call overhead. The server chunks internally by 50 for
 // the YouTube API, so this only affects round-trip count and progress
-// granularity — kept at 50 to avoid exceeding Cloudflare Worker CPU time limits
+// granularity — reduced to 20 to avoid exceeding Cloudflare Worker CPU time limits
 // while processing inserts and serialization.
-const CLIENT_BATCH_SIZE = 50;
+const CLIENT_BATCH_SIZE = 20;
 
-// Number of lookup batches to run concurrently. Kept at 5 to stay clear of
-// YouTube API rate limits while still cutting wall-clock time versus sequential
+// Number of lookup batches to run concurrently. Reduced to 2 to stay clear of
+// Cloudflare Worker CPU time limits while still cutting wall-clock time versus sequential
 // fetching.
-const LOOKUP_CONCURRENCY = 5;
+const LOOKUP_CONCURRENCY = 2;
 
 /**
  * Fetch metadata for a list of unique video IDs using the server action.
